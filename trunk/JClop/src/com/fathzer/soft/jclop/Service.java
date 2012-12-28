@@ -12,14 +12,13 @@ import java.util.Collection;
 
 import net.astesana.ajlib.utilities.StringUtils;
 
-import org.apache.commons.codec.CharEncoding;
-
 /** This class represents a cloud service, with accounts synchronized with a local cache.
  * <br>Limitation: Account can't contain folder.
  * @author Jean-Marc Astesana
  * Licence GPL v3
  */
 public abstract class Service {
+	static final String UTF_8 = "UTF-8";
 	public static final String URI_DOMAIN = "cloud.astesana.net";
 
 	private File root;
@@ -107,16 +106,16 @@ public abstract class Service {
 			StringBuilder builder = new StringBuilder();
 			builder.append(getScheme());
 			builder.append("://");
-			builder.append(URLEncoder.encode(account.getId(), CharEncoding.UTF_8));
+			builder.append(URLEncoder.encode(account.getId(), UTF_8));
 			builder.append(":");
 			builder.append(getConnectionDataURIFragment(account.getConnectionData()));
 			builder.append('@');
 			builder.append(URI_DOMAIN);
 			builder.append('/');
-			builder.append(URLEncoder.encode(account.getDisplayName(), CharEncoding.UTF_8));
+			builder.append(URLEncoder.encode(account.getDisplayName(), UTF_8));
 			builder.append('/');
 			if (path.startsWith("/")) path = path.substring(1);
-			builder.append(URLEncoder.encode(path, CharEncoding.UTF_8));
+			builder.append(URLEncoder.encode(path, UTF_8));
 			return new URI(builder.toString());
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
@@ -132,13 +131,13 @@ public abstract class Service {
 	 */
 	public final Entry getEntry(URI uri) {
 		try {
-			String path = URLDecoder.decode(uri.getPath().substring(1), CharEncoding.UTF_8);
+			String path = URLDecoder.decode(uri.getPath().substring(1), UTF_8);
 			int index = path.indexOf('/');
 			String accountName = path.substring(0, index);
 			path = getLocalPath(path.substring(index));
 			if (path==null) return null;
 			String[] split = StringUtils.split(uri.getUserInfo(), ':');
-			String accountId = URLDecoder.decode(split[0], CharEncoding.UTF_8);
+			String accountId = URLDecoder.decode(split[0], UTF_8);
 			for (Account account : getAccounts()) {
 				if (account.getId().equals(accountId)) {
 					return new Entry(account, path);
