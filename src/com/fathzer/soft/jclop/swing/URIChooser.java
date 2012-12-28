@@ -29,8 +29,6 @@ import java.util.concurrent.ExecutionException;
 
 import net.astesana.ajlib.swing.widget.ComboBox;
 import net.astesana.ajlib.swing.Utils;
-import net.astesana.ajlib.swing.dialog.urichooser.AbstractURIChooserPanel;
-import net.astesana.ajlib.swing.dialog.urichooser.MultipleURIChooserDialog;
 import net.astesana.ajlib.swing.table.JTableListener;
 import net.astesana.ajlib.swing.widget.TextWidget;
 import net.astesana.ajlib.swing.worker.WorkInProgressFrame;
@@ -476,6 +474,16 @@ public abstract class URIChooser extends JPanel implements AbstractURIChooserPan
 	public String getScheme() {
 		return service.getScheme();
 	}
+	
+	/** Gets the chooser title.
+	 * <br>By default, returns getScheme().
+	 * @see #getScheme()
+	 * @see URIChooser#getTitle()
+	 */
+	@Override
+	public String getTitle() {
+		return getScheme();
+	}
 
 	/* (non-Javadoc)
 	 * @see net.astesana.ajlib.swing.dialog.urichooser.AbstractURIChooserPanel#setUp()
@@ -501,6 +509,5 @@ public abstract class URIChooser extends JPanel implements AbstractURIChooserPan
 	
 	public static void showError(Window owner, String message) {
 		JOptionPane.showMessageDialog(owner, message, Messages.getString("Error.title"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-
 	}
 }
