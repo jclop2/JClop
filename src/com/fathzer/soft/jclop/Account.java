@@ -13,8 +13,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.commons.codec.CharEncoding;
-
 import com.fathzer.soft.jclop.Service;
 
 /** An account in the Cloud, cached in a local folder.
@@ -34,7 +32,7 @@ public class Account {
 		if (!file.isDirectory()) throw new IllegalArgumentException();
 		this.root = file;
 		try {
-			this.id = URLDecoder.decode(file.getName(), CharEncoding.UTF_8);
+			this.id = URLDecoder.decode(file.getName(), Service.UTF_8);
 		} catch (UnsupportedEncodingException e) {
 			throw new UnsupportedEncodingException();
 		}
@@ -63,7 +61,7 @@ public class Account {
 	
 	public void serialize() throws IOException {
 		try {
-			this.root = new File(service.getCacheRoot(), URLEncoder.encode(id, CharEncoding.UTF_8));
+			this.root = new File(service.getCacheRoot(), URLEncoder.encode(id, Service.UTF_8));
 			if (this.root.isFile()) this.root.delete();
 			this.root.mkdirs();
 			if (!this.root.isDirectory()) throw new IOException();
