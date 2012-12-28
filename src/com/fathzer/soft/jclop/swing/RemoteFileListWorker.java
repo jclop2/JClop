@@ -1,5 +1,6 @@
 package com.fathzer.soft.jclop.swing;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.TreeSet;
 
@@ -18,11 +19,15 @@ final class RemoteFileListWorker extends Worker<Collection<Entry>, Void> impleme
 
 		@Override
 		protected Collection<Entry> doProcessing() throws Exception {
-			Collection<Entry> local = account.getLocalFiles();
-			TreeSet<Entry> result = new TreeSet<Entry>(local);
-			Collection<Entry> remote = account.getRemoteFiles(this);
-			result.addAll(remote);
-			return result;
+			if (account==null) {
+				return new ArrayList<Entry>(0);
+			} else {
+				Collection<Entry> local = account.getLocalFiles();
+				TreeSet<Entry> result = new TreeSet<Entry>(local);
+				Collection<Entry> remote = account.getRemoteFiles(this);
+				result.addAll(remote);
+				return result;
+			}
 		}
 
 		/* (non-Javadoc)

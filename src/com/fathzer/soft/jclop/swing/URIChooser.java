@@ -32,6 +32,7 @@ import net.astesana.ajlib.swing.Utils;
 import net.astesana.ajlib.swing.table.JTableListener;
 import net.astesana.ajlib.swing.widget.TextWidget;
 import net.astesana.ajlib.swing.worker.WorkInProgressFrame;
+import net.astesana.ajlib.utilities.NullUtils;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -105,8 +106,9 @@ public abstract class URIChooser extends JPanel implements AbstractURIChooserPan
 
 	public void refresh(boolean force) {
 		Account account = (Account) getAccountsCombo().getSelectedItem();
-		if (force || ((account!=null) && !account.getId().equals(initedAccountId))) {
-			initedAccountId = account.getId();
+		String accountId = account==null?null:account.getId();
+		if (force || (!NullUtils.areEquals(initedAccountId, accountId))) {
+			initedAccountId = accountId;
 			RemoteFileListWorker worker = new RemoteFileListWorker(account);
 			worker.setPhase(getRemoteConnectingWording(), -1); //$NON-NLS-1$
 			final Window owner = Utils.getOwnerWindow(this);
@@ -398,7 +400,7 @@ public abstract class URIChooser extends JPanel implements AbstractURIChooserPan
 					boolean oneIsSelected = getAccountsCombo().getSelectedIndex()>=0;
 					getDeleteButton().setEnabled(oneIsSelected);
 					getRefreshButton().setEnabled(oneIsSelected);
-					refresh(false);
+					refresh(!oneIsSelected);
 				}
 			});
 		}
@@ -426,8 +428,10 @@ public abstract class URIChooser extends JPanel implements AbstractURIChooserPan
 							account.serialize();
 						} catch (IOException e) {
 							//FIXME Alert the user something went wrong
+							e.printStackTrace();
 						}
 						getAccountsCombo().addItem(account);
+						getAccountsCombo().setSelectedItem(account);
 					}
 				}
 			});
