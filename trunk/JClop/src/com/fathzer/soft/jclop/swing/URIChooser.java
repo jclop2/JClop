@@ -498,4 +498,9 @@ public abstract class URIChooser extends JPanel implements AbstractURIChooserPan
 		// If the selectedFile exists, it is selected in the file list as there's a listener on the file name field
 		return getFileList().getSelectedRow()>=0;
 	}
+	
+	public static void showError(Window owner, String message) {
+		JOptionPane.showMessageDialog(owner, message, Messages.getString("Error.title"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+
+	}
 }
