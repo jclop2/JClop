@@ -27,7 +27,6 @@ public abstract class Service {
 
 	/** Constructor.
 	 * @param root The root folder of the service (the place where all accounts are cached).<br>
-	 * If the folder doesn't exists, it is created.
 	 * @throws IllegalArgumentException if it is not possible to create the folder (or root is a file, not a folder)  
 	 */
 	protected Service(File root) {

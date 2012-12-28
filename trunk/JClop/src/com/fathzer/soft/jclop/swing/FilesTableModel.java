@@ -8,7 +8,7 @@ import com.fathzer.soft.jclop.Entry;
 
 
 @SuppressWarnings("serial")
-public class FilesTableModel extends AbstractTableModel {
+class FilesTableModel extends AbstractTableModel {
 	private ArrayList<Entry> rows;
 
 	public FilesTableModel() {
