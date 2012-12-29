@@ -51,7 +51,7 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 
 	@Override
 	public String getTooltip(boolean save) {
-		return Messages.getString(save?"FileChooserPanel.tooltip.save":"FileChooserPanel.tooltip.open"); //$NON-NLS-1$
+		return Messages.getString(save?"FileChooserPanel.tooltip.save":"FileChooserPanel.tooltip.open"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	@Override
 	public void setSelectedURI(URI uri) {
 		if (uri==null) {
-			fileChooser.setSelectedFile(null);
+			if (fileChooser.getSelectedFile()!=null) fileChooser.setSelectedFile(null);
 		} else {
 			File file = new File(uri);
 			if (getFileChooser().getDialogType()==JFileChooser.OPEN_DIALOG) {

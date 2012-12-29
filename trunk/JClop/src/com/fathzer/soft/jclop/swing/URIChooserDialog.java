@@ -32,7 +32,6 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	}
 	
 	private URIChooser getSelectedPanel() {
-		if (!isVisible()) return null;
 		if (multiplePanel==null) return this.data[0];
 		return (URIChooser) multiplePanel.getSelectedComponent();
 	}

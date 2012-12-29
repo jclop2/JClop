@@ -7,31 +7,31 @@ import javax.swing.ImageIcon;
  * @author Jean-Marc Astesana (License : GPL v3)
  */
 public final class IconPack {
-	public static final IconPack PACK = new IconPack();
+	public static final IconPack DEFAULT = new IconPack();
 	
 	private Icon newAccount; 
 	private Icon deleteAccount; 
 	private Icon synchronize; 
 	
-	private IconPack() {}
+	public IconPack() {}
 	
 	public Icon getSynchronize() {
 		if (synchronize==null) {
-			synchronize = new ImageIcon(IconPack.class.getResource("synchronize.png"));
+			synchronize = new ImageIcon(IconPack.class.getResource("synchronize.png")); //$NON-NLS-1$
 		}
 		return synchronize;
 	}
 
 	public Icon getNewAccount() {
 		if (newAccount==null) {
-			newAccount = new ImageIcon(IconPack.class.getResource("new.png"));
+			newAccount = new ImageIcon(IconPack.class.getResource("new.png")); //$NON-NLS-1$
 		}
 		return newAccount;
 	}
 
 	public Icon getDeleteAccount() {
 		if (deleteAccount==null) {
-			deleteAccount = new ImageIcon(IconPack.class.getResource("delete.png"));
+			deleteAccount = new ImageIcon(IconPack.class.getResource("delete.png")); //$NON-NLS-1$
 		}
 		return deleteAccount;
 	}
