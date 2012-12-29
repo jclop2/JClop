@@ -13,10 +13,9 @@ import javax.swing.JPanel;
 
 import net.astesana.ajlib.swing.dialog.AbstractDialog;
 import net.astesana.ajlib.swing.dialog.FileChooser;
-import net.astesana.ajlib.swing.framework.Application;
 
 @SuppressWarnings("serial")
-public class MultipleURIChooserDialog extends AbstractDialog<AbstractURIChooserPanel[], URI> {
+public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	private MultipleURIChooserPanel multiplePanel;
 	private boolean saveDialog;
 	
@@ -26,16 +25,16 @@ public class MultipleURIChooserDialog extends AbstractDialog<AbstractURIChooserP
 	 * @param title The dialog's title
 	 * @param choosers The abstract URI choosers. The elements of this array should be subclasses of java.awt.Component
 	 */
-	public MultipleURIChooserDialog(Window owner, String title, AbstractURIChooserPanel[] choosers) {
+	public URIChooserDialog(Window owner, String title, URIChooser[] choosers) {
 		super(owner, title, choosers);
 		saveDialog = false; // To force setSaveDialog to do something
 		setSaveDialog(false);
 	}
 	
-	private AbstractURIChooserPanel getSelectedPanel() {
+	private URIChooser getSelectedPanel() {
 		if (!isVisible()) return null;
 		if (multiplePanel==null) return this.data[0];
-		return (AbstractURIChooserPanel) multiplePanel.getSelectedComponent();
+		return (URIChooser) multiplePanel.getSelectedComponent();
 	}
 
 	@Override
@@ -67,7 +66,7 @@ public class MultipleURIChooserDialog extends AbstractDialog<AbstractURIChooserP
 		this.multiplePanel = data.length==1 ? null : new MultipleURIChooserPanel(data);
 		Component cp = multiplePanel==null ? (Component) data[0] : multiplePanel;
 		result.add(cp, BorderLayout.CENTER);
-		cp.addPropertyChangeListener(AbstractURIChooserPanel.SELECTED_URI_PROPERTY, selectListener);
+		cp.addPropertyChangeListener(URIChooser.SELECTED_URI_PROPERTY, selectListener);
 		cp.addPropertyChangeListener(MultipleURIChooserPanel.URI_APPROVED_PROPERTY, confirmListener);
 		return result;
 	}
@@ -79,7 +78,7 @@ public class MultipleURIChooserDialog extends AbstractDialog<AbstractURIChooserP
 
 	@Override
 	protected String getOkDisabledCause() {
-		if (getSelectedURI()==null) return Application.getString("URIChooserDialog.noFileSelected"); //$NON-NLS-1$
+		if (getSelectedURI()==null) return Messages.getString("URIChooserDialog.noFileSelected"); //$NON-NLS-1$
 		return null;
 	}
 
@@ -95,7 +94,7 @@ public class MultipleURIChooserDialog extends AbstractDialog<AbstractURIChooserP
 	}
 	
 	private URI getSelectedURI() {
-		AbstractURIChooserPanel panel = getSelectedPanel();
+		URIChooser panel = getSelectedPanel();
 		return panel!=null?panel.getSelectedURI():null;
 	}
 	
@@ -104,8 +103,8 @@ public class MultipleURIChooserDialog extends AbstractDialog<AbstractURIChooserP
 	 */
 	public void setSaveDialog(boolean save) {
 		if (save!=saveDialog) {
-			getOkButton().setText(save?Application.getString("URIChooserDialog.saveButton.title"):Application.getString("URIChooserDialog.openButton.title")); //$NON-NLS-1$ //$NON-NLS-2$
-			for (AbstractURIChooserPanel panel : data) {
+			getOkButton().setText(save?Messages.getString("URIChooserDialog.saveButton.title"):Messages.getString("URIChooserDialog.openButton.title")); //$NON-NLS-1$ //$NON-NLS-2$
+			for (URIChooser panel : data) {
 				panel.setDialogType(save);
 			}
 		}
@@ -123,10 +122,10 @@ public class MultipleURIChooserDialog extends AbstractDialog<AbstractURIChooserP
 	 * @param uri an uri or null to clear the currently selected uri
 	 */
 	public void setSelectedURI(URI uri) {
-		AbstractURIChooserPanel panel = null;
+		URIChooser panel = null;
 		if (uri!=null) {
 			String scheme = uri.getScheme();
-			for (AbstractURIChooserPanel aPanel : data) {
+			for (URIChooser aPanel : data) {
 				if (aPanel.getScheme().equals(scheme)) {
 					panel = aPanel;
 				}
