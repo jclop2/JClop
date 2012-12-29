@@ -12,14 +12,13 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
 import net.astesana.ajlib.swing.dialog.FileChooser;
-import net.astesana.ajlib.swing.framework.Application;
 
 /** An AbstractURIChooserPanel that allows the user to select a file.
  * @author Jean-Marc Astesana
  * <BR>License : GPL v3
  */
 @SuppressWarnings("serial")
-public class FileChooserPanel extends JPanel implements AbstractURIChooserPanel {
+public class FileChooserPanel extends JPanel implements URIChooser {
 	public static final String SCHEME = "file";  //$NON-NLS-1$
 	private FileChooser fileChooser;
 
@@ -47,12 +46,12 @@ public class FileChooserPanel extends JPanel implements AbstractURIChooserPanel 
 	
 	@Override
 	public String getTitle() {
-		return Application.getString("FileChooserPanel.title"); //$NON-NLS-1$
+		return Messages.getString("FileChooserPanel.title"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getTooltip(boolean save) {
-		return Application.getString(save?"FileChooserPanel.tooltip.save":"FileChooserPanel.tooltip.open"); //$NON-NLS-1$
+		return Messages.getString(save?"FileChooserPanel.tooltip.save":"FileChooserPanel.tooltip.open"); //$NON-NLS-1$
 	}
 
 	@Override

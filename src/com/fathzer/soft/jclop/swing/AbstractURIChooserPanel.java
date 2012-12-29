@@ -1,76 +1,519 @@
 package com.fathzer.soft.jclop.swing;
 
+import javax.swing.AbstractAction;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
+import java.awt.Window;
+
+import javax.swing.JButton;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.io.IOException;
 import java.net.URI;
+import java.text.DecimalFormat;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 
-import javax.swing.Icon;
+import net.astesana.ajlib.swing.widget.ComboBox;
+import net.astesana.ajlib.swing.Utils;
+import net.astesana.ajlib.swing.framework.Application;
+import net.astesana.ajlib.swing.table.JTableListener;
+import net.astesana.ajlib.swing.widget.TextWidget;
+import net.astesana.ajlib.swing.worker.WorkInProgressFrame;
+import net.astesana.ajlib.utilities.NullUtils;
 
-/** An abstract component that allows the user to select a destination where to save/read his data.
- * <br><b><u>WARNING</u>:Although there is no indication that the class must be a subclass of Component, this is mandatory.</b>
- * @author Jean-Marc Astesana
- * <BR>License : GPL v3
- * @see MultipleURIChooserPanel
- */
-public interface AbstractURIChooserPanel {
-	/** The name of the selected uri property.
-	 * <br>This component should fire a property change event when the selected uri is modified.
-	 * @see #getSelectedURI() 
-	 */
-	public static final String SELECTED_URI_PROPERTY = "selectedUri";
-	/** The name of the approved uri property.
-	 * <br>This component could fire a property change event when the selected uri is approved by the user
-	 * (For example, if the user has double clicked an URI). This will cause the dialog to be validated.
-	 */
-	public static final String URI_APPROVED_PROPERTY = "uriApproved";
-	
-	/** Gets the uri scheme (file, ftp, http, ...) that this component supports.
-	 * @return a string
-	 */
-	public String getScheme();
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
-	/** Gets the title of the panel.
-	 * <br>This title will be used as tab name by the URIChooser. 
-	 * @return a String
-	 */
-	public String getTitle();
-	
-	/** Gets the tooltip of the panel.
-	 * <br>It will be used as tab tooltip by the URIChooser. 
-	 * @param save true to have the save tooltip, false to have the "open" tooltip
-	 * @return a String
-	 */
-	public abstract String getTooltip(boolean save);
-	
-	/** Gets the icon of the panel.
-	 * <br>It will be used as tab icon by the URIChooser. 
-	 * @return a String
-	 */
-	public abstract Icon getIcon();
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
-	/** Gets the currently selected URI.
-	 * @return an URI or null if no destination is currently selected
-	 */
-	public URI getSelectedURI();
-	
-	/** Sets the currently selected URI.
-	 * @param uri an URI
-	 */
-	public void setSelectedURI(URI uri);
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 
-	/** Sets the dialog type (save or read).
-	 * @param save true if the dialog is for saving data, false for reading data.
-	 */
-	public void setDialogType(boolean save);
+import com.fathzer.soft.jclop.Account;
+import com.fathzer.soft.jclop.Entry;
+import com.fathzer.soft.jclop.Service;
+
+@SuppressWarnings("serial")
+public abstract class AbstractURIChooserPanel extends JPanel implements URIChooser {
+	private JPanel centerPanel;
+	private JTable fileList;
+	private JPanel filePanel;
+	private JLabel lblNewLabel;
+	private TextWidget fileNameField;
 	
-	/** Sets up the panel.
-	 * <br>This method is called the each time the panel is becoming selected.
-	 * <br>It is the good place to set up the panel (connect to servers, for instance).
-	 * <br>If the set up is a time consuming task, it is a good practice to use SwingUtilities.invokeLater
-	 * in this method to perform the setup, in order the component to be displayed fast.
-	 */
-	public void setUp();
+	private JLabel lblAccount;
+	private JPanel northPanel;
+	private JButton refreshButton;
+	private JProgressBar progressBar;
+	private FilesTableModel filesModel;
+	private JScrollPane scrollPane;
 	
-	/** Tests whether or not the currently selected URI exists.
-	 * @return true if the selected URI exists, false if not or if no URI is selected
+	private JPanel panel;
+	private ComboBox accountsCombo;
+	private JButton btnNewAccount;
+	private JButton deleteButton;
+	private Service service;
+	private String initedAccountId;
+	
+	private URI selectedURI;
+	
+	public AbstractURIChooserPanel(Service service) {
+		this.service = service;
+		this.initedAccountId = null;
+		this.filesModel = new FilesTableModel();
+		setLayout(new BorderLayout(0, 0));
+		add(getNorthPanel(), BorderLayout.NORTH);
+		add(getCenterPanel(), BorderLayout.CENTER);
+	}
+	
+	public void setDialogType(boolean save) {
+		this.getFilePanel().setVisible(save);
+	}
+
+	public URI showOpenDialog(Component parent, String title) {
+		setDialogType(false);
+		return showDialog(parent, title);
+	}
+	
+	public URI showSaveDialog(Component parent, String title) {
+		setDialogType(true);
+		return showDialog(parent, title);
+	}
+	
+	public URI showDialog(Component parent, String title) {
+		Window owner = Utils.getOwnerWindow(parent);
+		URIChooserDialog dialog = new URIChooserDialog(owner, title, new URIChooser[]{this});
+		dialog.setSaveDialog(this.getFilePanel().isVisible());
+		return dialog.showDialog();
+	}
+
+	public void refresh(boolean force) {
+		Account account = (Account) getAccountsCombo().getSelectedItem();
+		String accountId = account==null?null:account.getId();
+		if (force || (!NullUtils.areEquals(initedAccountId, accountId))) {
+			initedAccountId = accountId;
+			RemoteFileListWorker worker = new RemoteFileListWorker(account);
+			worker.setPhase(getRemoteConnectingWording(), -1); //$NON-NLS-1$
+			final Window owner = Utils.getOwnerWindow(this);
+			WorkInProgressFrame frame = new WorkInProgressFrame(owner, Messages.getString("GenericWait.title"), ModalityType.APPLICATION_MODAL, worker); //$NON-NLS-1$
+			frame.setSize(300, frame.getSize().height);
+			Utils.centerWindow(frame, owner);
+			frame.setVisible(true); //$NON-NLS-1$
+			try {
+				Collection<Entry> entries = worker.get();
+				fillTable(entries);
+				getFileNameField().setEditable(true);
+				setQuota(account);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			} catch (ExecutionException e) {
+				//FIXME
+	//			if (e.getCause() instanceof DropboxIOException) {
+	//				JOptionPane.showMessageDialog(owner, LocalizationData.get("dropbox.Chooser.error.connectionFailed"), LocalizationData.get("Generic.warning"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+	//			} else if (e.getCause() instanceof DropboxUnlinkedException) {
+	//				System.err.println ("Not linked !!!");
+	//				throw new RuntimeException(e);
+	//			} else {
+					throw new RuntimeException(e);
+	//			}
+			} catch (CancellationException e) {
+				// The task was cancelled
+				setQuota(null);
+			}
+		}
+	}
+
+	private void setQuota(Account account) {
+		if ((account!=null) && (account.getQuota()>0)) {
+			long percentUsed = 100*(account.getUsed()) / account.getQuota(); 
+			getProgressBar().setValue((int)percentUsed);
+			double remaining = account.getQuota()-account.getUsed();
+			String unit = Messages.getString("Generic.data.unit.bytes"); //$NON-NLS-1$
+			if (remaining>1024) {
+				unit = Messages.getString("Generic.data.unit.kBytes"); //$NON-NLS-1$
+				remaining = remaining/1024;
+				if (remaining>1024) {
+					unit = Messages.getString("Generic.data.unit.MBytes"); //$NON-NLS-1$
+					remaining = remaining/1024;
+					if (remaining>1024) {
+						unit = Messages.getString("Generic.data.unit.GBytes"); //$NON-NLS-1$
+						remaining = remaining/1024;
+					}
+				}
+			}
+			getProgressBar().setString(MessageFormat.format(Messages.getString("Chooser.freeSpace"), new DecimalFormat("0.0").format(remaining), unit)); //$NON-NLS-1$ //$NON-NLS-2$
+			getProgressBar().setVisible(true);
+		} else {
+			getProgressBar().setVisible(false);
+		}
+	}
+	
+	private JPanel getCenterPanel() {
+		if (centerPanel == null) {
+			centerPanel = new JPanel();
+			centerPanel.setLayout(new BorderLayout(0, 0));
+			centerPanel.add(getScrollPane(), BorderLayout.CENTER);
+			centerPanel.add(getFilePanel(), BorderLayout.SOUTH);
+		}
+		return centerPanel;
+	}
+	private JTable getFileList() {
+		if (fileList == null) {
+			fileList = new JTable(filesModel);
+			fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			fileList.addMouseListener(new JTableListener(null, new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					AbstractURIChooserPanel.this.firePropertyChange(URI_APPROVED_PROPERTY, false, true);
+				}
+			}));
+			fileList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+				@Override
+				public void valueChanged(ListSelectionEvent e) {
+					if (!e.getValueIsAdjusting()) {
+						if (getFileList().getSelectedRow()!=-1) {
+							getFileNameField().setText((String) filesModel.getValueAt(getFileList().getSelectedRow(), 0));
+						}
+					}
+				}
+			});
+		}
+		return fileList;
+	}
+	private JPanel getFilePanel() {
+		if (filePanel == null) {
+			filePanel = new JPanel();
+			filePanel.setLayout(new BorderLayout(0, 0));
+			filePanel.add(getLblNewLabel(), BorderLayout.WEST);
+			filePanel.add(getFileNameField(), BorderLayout.CENTER);
+		}
+		return filePanel;
+	}
+	private JLabel getLblNewLabel() {
+		if (lblNewLabel == null) {
+			lblNewLabel = new JLabel(Messages.getString("Chooser.fileName"));  //$NON-NLS-1$
+		}
+		return lblNewLabel;
+	}
+	private TextWidget getFileNameField() {
+		if (fileNameField == null) {
+			fileNameField = new TextWidget();
+			fileNameField.setEditable(false);
+			fileNameField.addPropertyChangeListener(TextWidget.TEXT_PROPERTY, new PropertyChangeListener() {	
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+					int pos = fileNameField.getCaretPosition();
+					int index = -1;
+					for (int rowIndex=0;rowIndex<filesModel.getRowCount();rowIndex++) {
+						if (filesModel.getValueAt(rowIndex, 0).equals(evt.getNewValue())) {
+							index = rowIndex;
+							break;
+						}
+					}
+					ListSelectionModel selectionModel = getFileList().getSelectionModel();
+					if (index<0) {
+						selectionModel.clearSelection();
+					} else {
+						selectionModel.setSelectionInterval(index, index);
+					}
+					URI old = selectedURI;
+					String name = getFileNameField().getText();
+					Account account = (Account) getAccountsCombo().getSelectedItem();
+					if (account!=null) {
+						Entry entry = new Entry(account, name); 
+						selectedURI = ((account==null) || (name.length()==0))?null:getService().getURI(entry);
+						firePropertyChange(SELECTED_URI_PROPERTY, old, getSelectedURI());
+						pos = Math.min(pos, fileNameField.getText().length());
+						fileNameField.setCaretPosition(pos);
+					}
+				}
+			});
+		}
+		return fileNameField;
+	}
+	
+	private JLabel getLblAccount() {
+		if (lblAccount == null) {
+			lblAccount = new JLabel(Messages.getString("Chooser.account")); //$NON-NLS-1$
+		}
+		return lblAccount;
+	}
+
+	private JPanel getNorthPanel() {
+		if (northPanel == null) {
+			northPanel = new JPanel();
+			GridBagLayout gbl_northPanel = new GridBagLayout();
+			northPanel.setLayout(gbl_northPanel);
+			GridBagConstraints gbc_panel = new GridBagConstraints();
+			gbc_panel.weightx = 1.0;
+			gbc_panel.fill = GridBagConstraints.BOTH;
+			gbc_panel.insets = new Insets(0, 0, 0, 5);
+			gbc_panel.gridx = 0;
+			gbc_panel.gridy = 0;
+			northPanel.add(getPanel(), gbc_panel);
+			GridBagConstraints gbc_refreshButton = new GridBagConstraints();
+			gbc_refreshButton.gridheight = 0;
+			gbc_refreshButton.gridx = 1;
+			gbc_refreshButton.gridy = 0;
+			northPanel.add(getRefreshButton(), gbc_refreshButton);
+			GridBagConstraints gbc_progressBar = new GridBagConstraints();
+			gbc_progressBar.fill = GridBagConstraints.HORIZONTAL;
+			gbc_progressBar.insets = new Insets(5, 0, 5, 5);
+			gbc_progressBar.gridx = 0;
+			gbc_progressBar.gridy = 1;
+			northPanel.add(getProgressBar(), gbc_progressBar);
+		}
+		return northPanel;
+	}
+	private JButton getRefreshButton() {
+		if (refreshButton == null) {
+			refreshButton = new JButton(IconPack.PACK.getSynchronize());
+			refreshButton.setToolTipText(Messages.getString("Chooser.refresh.tooltip"));  //$NON-NLS-1$
+			refreshButton.setEnabled(getAccountsCombo().getItemCount()!=0);
+			refreshButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					refresh(true);
+				}
+			});
+		}
+		return refreshButton;
+	}
+	private JProgressBar getProgressBar() {
+		if (progressBar == null) {
+			progressBar = new JProgressBar();
+			progressBar.setStringPainted(true);
+			progressBar.setVisible(false);
+		}
+		return progressBar;
+	}
+
+	private void fillTable(Collection<Entry> entries) {
+		filesModel.clear();
+		for (Entry entry : entries) {
+			Entry filtered = filter(entry);
+			if (filtered!=null) filesModel.add(entry);
+		}
+	}
+
+	/** Filters an entry.
+	 * <br>By default, this method returns the entry path.
+	 * @param entry The entry available in the current Dropbox folder
+	 * @return The entry that will be displayed in the files list, or null to ignore this entry
 	 */
-	public boolean isSelectedExist();
+	protected Entry filter(Entry entry) {
+		return entry;
+	}
+	
+	private JScrollPane getScrollPane() {
+		if (scrollPane == null) {
+			scrollPane = new JScrollPane();
+			scrollPane.setViewportView(getFileList());
+			// Do not diplay column names
+			getFileList().setTableHeader(null);
+			scrollPane.setColumnHeaderView(null);
+		}
+		return scrollPane;
+	}
+
+	public URI getSelectedURI() {
+		return selectedURI;
+	}
+	
+	public void setSelectedURI(URI uri) {
+		if (uri==null) {
+			getFileNameField().setText(""); //$NON-NLS-1$
+		} else {
+			//FIXME
+			Entry entry = service.getEntry(uri);
+			System.out.println (entry+" is selected"); //$NON-NLS-1$
+//			FileId id = FileId.fromURI(uri);
+//			if (!getInfo().getAccount().displayName.equals(id.getAccount())) throw new IllegalArgumentException("invalid account"); //$NON-NLS-1$
+//			getFileNameField().setText(uri.getPath().substring(1));
+		}
+		selectedURI = uri;
+	}
+	
+	private JPanel getPanel() {
+		if (panel == null) {
+			panel = new JPanel();
+			GridBagLayout gbl_panel = new GridBagLayout();
+			panel.setLayout(gbl_panel);
+			GridBagConstraints gbc_lblAccount = new GridBagConstraints();
+			gbc_lblAccount.fill = GridBagConstraints.BOTH;
+			gbc_lblAccount.insets = new Insets(0, 0, 0, 5);
+			gbc_lblAccount.anchor = GridBagConstraints.EAST;
+			gbc_lblAccount.gridx = 0;
+			gbc_lblAccount.gridy = 0;
+			panel.add(getLblAccount(), gbc_lblAccount);
+			GridBagConstraints gbc_accountsCombo = new GridBagConstraints();
+			gbc_accountsCombo.weightx = 1.0;
+			gbc_accountsCombo.fill = GridBagConstraints.BOTH;
+			gbc_accountsCombo.gridx = 1;
+			gbc_accountsCombo.gridy = 0;
+			panel.add(getAccountsCombo(), gbc_accountsCombo);
+			GridBagConstraints gbc_btnNewAccount = new GridBagConstraints();
+			gbc_btnNewAccount.gridx = 2;
+			gbc_btnNewAccount.gridy = 0;
+			panel.add(getBtnNewAccount(), gbc_btnNewAccount);
+			GridBagConstraints gbc_deleteButton = new GridBagConstraints();
+			gbc_deleteButton.insets = new Insets(0, 0, 0, 5);
+			gbc_deleteButton.gridx = 3;
+			gbc_deleteButton.gridy = 0;
+			panel.add(getDeleteButton(), gbc_deleteButton);
+		}
+		return panel;
+	}
+	private ComboBox getAccountsCombo() {
+		if (accountsCombo == null) {
+			accountsCombo = new ComboBox();
+			accountsCombo.setRenderer(new BasicComboBoxRenderer(){
+				@Override
+				public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+					if (value!=null) value = ((Account)value).getDisplayName();
+					return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				}
+			});
+			Collection<Account> accounts = getService().getAccounts();
+			for (Account account : accounts) {
+				accountsCombo.addItem(account);
+			}
+			accountsCombo.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					boolean oneIsSelected = getAccountsCombo().getSelectedIndex()>=0;
+					getDeleteButton().setEnabled(oneIsSelected);
+					getRefreshButton().setEnabled(oneIsSelected);
+					refresh(!oneIsSelected);
+				}
+			});
+		}
+		return accountsCombo;
+	}
+	private JButton getBtnNewAccount() {
+		if (btnNewAccount == null) {
+			btnNewAccount = new JButton(IconPack.PACK.getNewAccount());
+			btnNewAccount.setToolTipText(Messages.getString("Chooser.new.tooltip")); //$NON-NLS-1$
+			int height = getAccountsCombo().getPreferredSize().height;
+			btnNewAccount.setPreferredSize(new Dimension(height, height));
+			btnNewAccount.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent event) {
+					Account account = createNewAccount();
+					if (account!=null) {
+						// Test if account is already there
+						for (int i = 0; i < getAccountsCombo().getItemCount(); i++) {
+							if (((Account)getAccountsCombo().getItemAt(i)).getDisplayName().equals(account.getDisplayName())) {
+								getAccountsCombo().setSelectedIndex(i);
+								return;
+							}
+						}
+						// Save the account data to disk
+						try {
+							account.serialize();
+						} catch (IOException e) {
+							//FIXME Alert the user something went wrong
+							e.printStackTrace();
+						}
+						getAccountsCombo().addItem(account);
+						getAccountsCombo().setSelectedItem(account);
+					}
+				}
+			});
+		}
+		return btnNewAccount;
+	}
+	private JButton getDeleteButton() {
+		if (deleteButton == null) {
+			deleteButton = new JButton(IconPack.PACK.getDeleteAccount());
+			deleteButton.setEnabled(getAccountsCombo().getItemCount()!=0);
+			deleteButton.setToolTipText(Messages.getString("Chooser.delete.tooltip")); //$NON-NLS-1$
+			int height = getAccountsCombo().getPreferredSize().height;
+			deleteButton.setPreferredSize(new Dimension(height, height));
+			deleteButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					boolean confirm = JOptionPane.showOptionDialog(Utils.getOwnerWindow(deleteButton), Messages.getString("Chooser.delete.message"), Messages.getString("Chooser.delete.message.title"), //$NON-NLS-1$ //$NON-NLS-2$
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{Application.getString("Chooser.delete"),Application.getString("GenericButton.cancel")},1)==0; //$NON-NLS-1$ //$NON-NLS-2$
+					if (confirm) {
+						Account account = (Account) getAccountsCombo().getSelectedItem();
+						getAccountsCombo().removeItemAt(getAccountsCombo().getSelectedIndex());
+						account.delete();
+					}
+				}
+			});
+		}
+		return deleteButton;
+	}
+
+	protected abstract Account createNewAccount();
+
+	public Service getService() {
+		return service;
+	}
+
+	protected String getRemoteConnectingWording() {
+		return Messages.getString("Chooser.connecting"); //LOCAL //$NON-NLS-1$
+	}
+
+	/* (non-Javadoc)
+	 * @see net.astesana.ajlib.swing.dialog.urichooser.AbstractURIChooserPanel#getSchemes()
+	 */
+	@Override
+	public String getScheme() {
+		return service.getScheme();
+	}
+	
+	/** Gets the chooser title.
+	 * <br>By default, returns getScheme().
+	 * @see #getScheme()
+	 * @see AbstractURIChooserPanel#getTitle()
+	 */
+	@Override
+	public String getTitle() {
+		return getScheme();
+	}
+
+	/* (non-Javadoc)
+	 * @see net.astesana.ajlib.swing.dialog.urichooser.AbstractURIChooserPanel#setUp()
+	 */
+	@Override
+	public void setUp() {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				refresh(false);
+			}
+		});
+	}
+
+	/* (non-Javadoc)
+	 * @see net.astesana.ajlib.swing.dialog.urichooser.AbstractURIChooserPanel#exist(java.net.URI)
+	 */
+	@Override
+	public boolean isSelectedExist() {
+		// If the selectedFile exists, it is selected in the file list as there's a listener on the file name field
+		return getFileList().getSelectedRow()>=0;
+	}
+	
+	public static void showError(Window owner, String message) {
+		JOptionPane.showMessageDialog(owner, message, Messages.getString("Error.title"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+	}
 }

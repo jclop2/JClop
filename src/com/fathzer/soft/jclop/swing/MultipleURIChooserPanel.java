@@ -19,9 +19,9 @@ import net.astesana.ajlib.utilities.NullUtils;
  * <BR>License : GPL v3
  */
 @SuppressWarnings("serial")
-public class MultipleURIChooserPanel extends JTabbedPane {
-	public static final String SELECTED_URI_PROPERTY = AbstractURIChooserPanel.SELECTED_URI_PROPERTY;
-	public static final String URI_APPROVED_PROPERTY = AbstractURIChooserPanel.URI_APPROVED_PROPERTY;
+class MultipleURIChooserPanel extends JTabbedPane {
+	public static final String SELECTED_URI_PROPERTY = URIChooser.SELECTED_URI_PROPERTY;
+	public static final String URI_APPROVED_PROPERTY = URIChooser.URI_APPROVED_PROPERTY;
 
 	private URI selectedURI;
 	private boolean isSave;
@@ -31,12 +31,12 @@ public class MultipleURIChooserPanel extends JTabbedPane {
 	/**
 	 * Creates the chooser.
 	 */
-	public MultipleURIChooserPanel(AbstractURIChooserPanel[] choosers) {
+	public MultipleURIChooserPanel(URIChooser[] choosers) {
 		this.lastSetup = -1;
 		setTabPlacement(JTabbedPane.TOP);
-		for (AbstractURIChooserPanel uiChooser:choosers) {
+		for (URIChooser uiChooser:choosers) {
 			addTab(uiChooser.getTitle(), uiChooser.getIcon(), (Component)uiChooser, null);
-			((Component)uiChooser).addPropertyChangeListener(AbstractURIChooserPanel.SELECTED_URI_PROPERTY, new PropertyChangeListener() {
+			((Component)uiChooser).addPropertyChangeListener(URIChooser.SELECTED_URI_PROPERTY, new PropertyChangeListener() {
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
 					URI old = selectedURI;
@@ -45,7 +45,7 @@ public class MultipleURIChooserPanel extends JTabbedPane {
 					System.out.println (this+" "+SELECTED_URI_PROPERTY+": "+old+" -> "+selectedURI); //TODO
 				}
 			});
-			((Component)uiChooser).addPropertyChangeListener(AbstractURIChooserPanel.URI_APPROVED_PROPERTY, new PropertyChangeListener() {
+			((Component)uiChooser).addPropertyChangeListener(URIChooser.URI_APPROVED_PROPERTY, new PropertyChangeListener() {
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
 					System.out.println (this+" "+URI_APPROVED_PROPERTY); //TODO
@@ -59,7 +59,7 @@ public class MultipleURIChooserPanel extends JTabbedPane {
 			public void stateChanged(ChangeEvent e) {
 				URI old = selectedURI;
 				boolean hasSelectedTab = getSelectedComponent()!=null;
-				selectedURI = hasSelectedTab?((AbstractURIChooserPanel)getSelectedComponent()).getSelectedURI():null;
+				selectedURI = hasSelectedTab?((URIChooser)getSelectedComponent()).getSelectedURI():null;
 				if (!NullUtils.areEquals(old, selectedURI)) firePropertyChange(SELECTED_URI_PROPERTY, old, selectedURI);
 				if (hasSelectedTab) setUp(getSelectedIndex());
 			}
@@ -70,14 +70,14 @@ public class MultipleURIChooserPanel extends JTabbedPane {
 	void setUp(int index) {
 		if (lastSetup!=index) {
 			lastSetup = index;
-			((AbstractURIChooserPanel)getComponent(index)).setUp();
+			((URIChooser)getComponent(index)).setUp();
 		}
 	}
 
 	public void setDialogType(boolean save) {
 		this.isSave = save;
 		for (int i = 0; i < this.getTabCount(); i++) {
-			AbstractURIChooserPanel tab = (AbstractURIChooserPanel)this.getComponentAt(i);
+			URIChooser tab = (URIChooser)this.getComponentAt(i);
 			this.setToolTipTextAt(i, tab.getTooltip(save));
 			tab.setDialogType(save);
 		}
@@ -101,7 +101,7 @@ public class MultipleURIChooserPanel extends JTabbedPane {
 		if (uri!=null) {
 			String scheme = uri.getScheme();
 			for (int i=0; i<getComponentCount(); i++) {
-				AbstractURIChooserPanel panel = (AbstractURIChooserPanel)getComponent(i);
+				URIChooser panel = (URIChooser)getComponent(i);
 				if (panel.getScheme().equals(scheme)) {
 					setSelectedIndex(i);
 					panel.setSelectedURI(uri);
@@ -109,7 +109,7 @@ public class MultipleURIChooserPanel extends JTabbedPane {
 				}
 			}
 		} else {
-			((AbstractURIChooserPanel)getSelectedComponent()).setSelectedURI(uri);
+			((URIChooser)getSelectedComponent()).setSelectedURI(uri);
 		}
 	}
 }
