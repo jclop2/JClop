@@ -113,6 +113,13 @@ public class Account {
 		return quota;
 	}
 
+	/** Sets the account quota in bytes.
+	 * @param quota The account quota in bytes. Zero or a negative value means the quota is unknown.
+	 */
+	public void setQuota(long quota) {
+		this.quota = quota;
+	}
+
 	/** Gets the size used in bytes.
 	 * <br>Please note that this method should return quickly. This means, it should not connect with the server
 	 * in order to have the information. This method should return a negative number until the remote data is initialized
@@ -123,6 +130,13 @@ public class Account {
 		return used;
 	}
 	
+	/** Sets the used size of the account.
+	 * @param used The size used in the account in bytes. A negative value means this size is unknown.
+	 */
+	public void setUsed(long used) {
+		this.used = used;
+	}
+
 	/** Deletes the local data about this account.
 	 */
 	public void delete() {

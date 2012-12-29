@@ -15,12 +15,12 @@ public interface URIChooser {
 	 * <br>This component should fire a property change event when the selected uri is modified.
 	 * @see #getSelectedURI() 
 	 */
-	public static final String SELECTED_URI_PROPERTY = "selectedUri";
+	public static final String SELECTED_URI_PROPERTY = "selectedUri"; //$NON-NLS-1$
 	/** The name of the approved uri property.
 	 * <br>This component could fire a property change event when the selected uri is approved by the user
 	 * (For example, if the user has double clicked an URI). This will cause the dialog to be validated.
 	 */
-	public static final String URI_APPROVED_PROPERTY = "uriApproved";
+	public static final String URI_APPROVED_PROPERTY = "uriApproved"; //$NON-NLS-1$
 	
 	/** Gets the uri scheme (file, ftp, http, ...) that this component supports.
 	 * @return a string

@@ -42,13 +42,12 @@ class MultipleURIChooserPanel extends JTabbedPane {
 					URI old = selectedURI;
 					selectedURI = (URI) evt.getNewValue();
 					firePropertyChange(SELECTED_URI_PROPERTY, old, selectedURI);
-					System.out.println (this+" "+SELECTED_URI_PROPERTY+": "+old+" -> "+selectedURI); //TODO
+//					System.out.println (this+" "+SELECTED_URI_PROPERTY+": "+old+" -> "+selectedURI);
 				}
 			});
 			((Component)uiChooser).addPropertyChangeListener(URIChooser.URI_APPROVED_PROPERTY, new PropertyChangeListener() {
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
-					System.out.println (this+" "+URI_APPROVED_PROPERTY); //TODO
 					firePropertyChange(URI_APPROVED_PROPERTY, evt.getOldValue(), evt.getNewValue());
 				}
 			});

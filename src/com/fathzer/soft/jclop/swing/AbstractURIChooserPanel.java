@@ -68,16 +68,18 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	
 	private JPanel panel;
 	private ComboBox accountsCombo;
-	private JButton btnNewAccount;
+	private JButton newButton;
 	private JButton deleteButton;
 	private Service service;
 	private String initedAccountId;
 	
+	private IconPack icons;
 	private URI selectedURI;
 	
 	public AbstractURIChooserPanel(Service service) {
 		this.service = service;
 		this.initedAccountId = null;
+		setIconPack(IconPack.DEFAULT);
 		this.filesModel = new FilesTableModel();
 		setLayout(new BorderLayout(0, 0));
 		add(getNorthPanel(), BorderLayout.NORTH);
@@ -103,6 +105,16 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		URIChooserDialog dialog = new URIChooserDialog(owner, title, new URIChooser[]{this});
 		dialog.setSaveDialog(this.getFilePanel().isVisible());
 		return dialog.showDialog();
+	}
+	
+	/** Sets the icons used by this panel.
+	 * @param pack The icon pack
+	 */
+	public void setIconPack(IconPack pack) {
+		this.icons = pack;
+		this.getNewButton().setIcon(this.icons.getNewAccount());
+		this.getDeleteButton().setIcon(this.icons.getDeleteAccount());
+		this.getRefreshButton().setIcon(this.icons.getSynchronize());
 	}
 
 	public void refresh(boolean force) {
@@ -142,7 +154,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 
 	private void setQuota(Account account) {
-		if ((account!=null) && (account.getQuota()>0)) {
+		if ((account!=null) && (account.getQuota()>0) && (account.getUsed()>=0)) {
 			long percentUsed = 100*(account.getUsed()) / account.getQuota(); 
 			getProgressBar().setValue((int)percentUsed);
 			double remaining = account.getQuota()-account.getUsed();
@@ -285,7 +297,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 	private JButton getRefreshButton() {
 		if (refreshButton == null) {
-			refreshButton = new JButton(IconPack.PACK.getSynchronize());
+			refreshButton = new JButton();
+			int height = getAccountsCombo().getPreferredSize().height;
+			refreshButton.setPreferredSize(new Dimension(height, height));
 			refreshButton.setToolTipText(Messages.getString("Chooser.refresh.tooltip"));  //$NON-NLS-1$
 			refreshButton.setEnabled(getAccountsCombo().getItemCount()!=0);
 			refreshButton.addActionListener(new ActionListener() {
@@ -372,7 +386,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			GridBagConstraints gbc_btnNewAccount = new GridBagConstraints();
 			gbc_btnNewAccount.gridx = 2;
 			gbc_btnNewAccount.gridy = 0;
-			panel.add(getBtnNewAccount(), gbc_btnNewAccount);
+			panel.add(getNewButton(), gbc_btnNewAccount);
 			GridBagConstraints gbc_deleteButton = new GridBagConstraints();
 			gbc_deleteButton.insets = new Insets(0, 0, 0, 5);
 			gbc_deleteButton.gridx = 3;
@@ -407,13 +421,13 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		}
 		return accountsCombo;
 	}
-	private JButton getBtnNewAccount() {
-		if (btnNewAccount == null) {
-			btnNewAccount = new JButton(IconPack.PACK.getNewAccount());
-			btnNewAccount.setToolTipText(Messages.getString("Chooser.new.tooltip")); //$NON-NLS-1$
+	private JButton getNewButton() {
+		if (newButton == null) {
+			newButton = new JButton();
+			newButton.setToolTipText(Messages.getString("Chooser.new.tooltip")); //$NON-NLS-1$
 			int height = getAccountsCombo().getPreferredSize().height;
-			btnNewAccount.setPreferredSize(new Dimension(height, height));
-			btnNewAccount.addActionListener(new ActionListener() {
+			newButton.setPreferredSize(new Dimension(height, height));
+			newButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
 					Account account = createNewAccount();
@@ -438,11 +452,11 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				}
 			});
 		}
-		return btnNewAccount;
+		return newButton;
 	}
 	private JButton getDeleteButton() {
 		if (deleteButton == null) {
-			deleteButton = new JButton(IconPack.PACK.getDeleteAccount());
+			deleteButton = new JButton();
 			deleteButton.setEnabled(getAccountsCombo().getItemCount()!=0);
 			deleteButton.setToolTipText(Messages.getString("Chooser.delete.tooltip")); //$NON-NLS-1$
 			int height = getAccountsCombo().getPreferredSize().height;
@@ -451,7 +465,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					boolean confirm = JOptionPane.showOptionDialog(Utils.getOwnerWindow(deleteButton), Messages.getString("Chooser.delete.message"), Messages.getString("Chooser.delete.message.title"), //$NON-NLS-1$ //$NON-NLS-2$
-							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{Application.getString("Chooser.delete"),Application.getString("GenericButton.cancel")},1)==0; //$NON-NLS-1$ //$NON-NLS-2$
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{Messages.getString("Chooser.delete"),Application.getString("GenericButton.cancel")},1)==0; //$NON-NLS-1$ //$NON-NLS-2$
 					if (confirm) {
 						Account account = (Account) getAccountsCombo().getSelectedItem();
 						getAccountsCombo().removeItemAt(getAccountsCombo().getSelectedIndex());
