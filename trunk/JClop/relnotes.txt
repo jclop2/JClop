@@ -1,0 +1,4 @@
+x
+version	1.0.0 (01/01/2013)
+improvement
+	This is the first JClop official release.

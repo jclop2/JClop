@@ -1,7 +1,4 @@
-/**
- * Comment
- */
-/**
+/**This is the main package.
  * @author Jean-Marc Astesana
  *
  */
