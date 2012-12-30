@@ -12,11 +12,11 @@ import net.astesana.ajlib.swing.worker.Worker;
 
 final class RemoteFileListWorker extends Worker<Collection<Entry>, Void> implements Cancellable {
 		private final Account account;
-		private final Collection<Entry> result;
+//		private final Collection<Entry> result;
 
 		RemoteFileListWorker(Account account) {
 			this.account = account;
-			this.result = new TreeSet<Entry>();
+//			this.result = new TreeSet<Entry>();
 		}
 
 		@Override
@@ -24,8 +24,12 @@ final class RemoteFileListWorker extends Worker<Collection<Entry>, Void> impleme
 			if (account==null) {
 				return new ArrayList<Entry>(0);
 			} else {
-				result.addAll(account.getLocalFiles());
-				if (!isCancelled()) result.addAll(account.getRemoteFiles(this));
+				Collection<Entry> result = new TreeSet<Entry>();
+				result.addAll(account.getLocalEntries());
+				if (!isCancelled()) {
+					Collection<Entry> remoteEntries = account.getService().getRemoteEntries(account, this);
+					result.addAll(remoteEntries);
+				}
 				return result;
 			}
 		}
