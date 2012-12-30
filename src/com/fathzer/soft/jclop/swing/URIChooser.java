@@ -52,14 +52,21 @@ public interface URIChooser {
 	public URI getSelectedURI();
 	
 	/** Sets the currently selected URI.
+	 * <br>Please note that this method may be (and usually is) called when the component is not showing yet
+	 * (when constructing the dialog containing this chooser).
+	 * So, it should not call a remote server (and display a wait dialog) to verify that the URI exists.
+	 * A good implementation is to store the URI in a temporary variable and perform the check during the setUp method.
+	 * <br>Please note that this could result in getSelectedURI not being updated before the dialog is visible. 
 	 * @param uri an URI
+	 * @throws IllegalArgumentException if the URI is not supported by the underlying service
+	 * @see #setUp()
 	 */
 	public void setSelectedURI(URI uri);
 
 	/** Sets the dialog type (save or read).
 	 * @param save true if the dialog is for saving data, false for reading data.
 	 */
-	public void setDialogType(boolean save);
+	public void setSaveType(boolean save);
 	
 	/** Sets up the panel.
 	 * <br>This method is called the each time the panel is becoming selected.

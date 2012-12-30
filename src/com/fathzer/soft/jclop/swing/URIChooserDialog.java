@@ -104,7 +104,7 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 		if (save!=saveDialog) {
 			getOkButton().setText(save?Messages.getString("URIChooserDialog.saveButton.title"):Messages.getString("URIChooserDialog.openButton.title")); //$NON-NLS-1$ //$NON-NLS-2$
 			for (URIChooser panel : data) {
-				panel.setDialogType(save);
+				panel.setSaveType(save);
 			}
 		}
 	}

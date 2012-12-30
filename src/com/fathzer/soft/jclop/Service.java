@@ -74,25 +74,25 @@ public abstract class Service {
 
 	public abstract String getScheme();
 
-	/** Gets the remote path of a local one.
-	 * <br>By default, this method returns the local path.
+	/** Gets the remote path of a local name.
+	 * <br>By default, this method returns the local path preceded by a '/'.
 	 * @param localPath The remote path
 	 * @return the remote path
 	 * @see #getLocalPath(String)
 	 */
 	public String getRemotePath(String localPath) {
-		return localPath;
+		return '/'+localPath;
 	}
 
-	/** Gets the local path related to a remote path.
+	/** Converts a remote path to a local name.
 	 * <br>This method can be used by getRemoteFiles method in order to filter remote files.
-	 * <br>By default, this method returns the remote path.
+	 * <br>By default, this method returns the remote path. If the path begins with a '/', it is removed.
 	 * @param remotePath The remote path
 	 * @return the local path or null if the entry should be ignored
 	 * @see #getRemoteFiles(Account, Cancellable)
 	 */
 	public String getLocalPath(String remotePath) {
-		return remotePath;
+		return remotePath.charAt(0)=='/'?remotePath.substring(1):remotePath;
 	}
 	
 	/** Gets the URI of an entry.
@@ -128,8 +128,10 @@ public abstract class Service {
 	 * @param uri An URI
 	 * @return an Entry or null if the entry is not allowed by the service (getLocalPath returns null).
 	 * @see #getLocalPath(String)
+	 * @throws IllegalArgumentException if the uri is not supported or has a wrong format
 	 */
 	public final Entry getEntry(URI uri) {
+		if (!uri.getScheme().equals(getScheme())) throw new IllegalArgumentException();
 		try {
 			String path = URLDecoder.decode(uri.getPath().substring(1), UTF_8);
 			int index = path.indexOf('/');

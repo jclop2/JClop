@@ -45,4 +45,8 @@ class FilesTableModel extends AbstractTableModel {
 	protected Entry getEntry(int row) {
 		return rows.get(row);
 	}
+
+	protected int indexOf(Entry entry) {
+		return rows.indexOf(entry);
+	}
 }

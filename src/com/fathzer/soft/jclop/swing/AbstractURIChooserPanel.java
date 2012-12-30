@@ -75,6 +75,8 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	
 	private IconPack icons;
 	private URI selectedURI;
+	private Entry pendingSelectedEntry;
+	private boolean hasPendingSelected;
 	
 	public AbstractURIChooserPanel(Service service) {
 		this.service = service;
@@ -86,17 +88,22 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		add(getCenterPanel(), BorderLayout.CENTER);
 	}
 	
-	public void setDialogType(boolean save) {
+	@Override
+	public void setSaveType(boolean save) {
 		this.getFilePanel().setVisible(save);
+	}
+	
+	private boolean isSaveType() {
+		return this.getFilePanel().isVisible();
 	}
 
 	public URI showOpenDialog(Component parent, String title) {
-		setDialogType(false);
+		setSaveType(false);
 		return showDialog(parent, title);
 	}
 	
 	public URI showSaveDialog(Component parent, String title) {
-		setDialogType(true);
+		setSaveType(true);
 		return showDialog(parent, title);
 	}
 	
@@ -118,9 +125,25 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 
 	public void refresh(boolean force) {
+		System.out.println ("refresh was called"); //FIXME
+		if (hasPendingSelected) {
+			if (pendingSelectedEntry==null) {
+				getFileNameField().setText(""); //$NON-NLS-1$
+			} else {
+				Entry entry = pendingSelectedEntry;
+				boolean old = getAccountsCombo().isActionEnabled(); 
+				getAccountsCombo().setActionEnabled(false);
+				if (!getAccountsCombo().contains(entry.getAccount())) {
+					getAccountsCombo().addItem(entry.getAccount());
+				}
+				getAccountsCombo().setSelectedItem(entry.getAccount());
+				getAccountsCombo().setActionEnabled(old);
+			}
+		}
+
 		Account account = (Account) getAccountsCombo().getSelectedItem();
 		String accountId = account==null?null:account.getId();
-		if (force || (!NullUtils.areEquals(initedAccountId, accountId))) {
+		if (force || hasPendingSelected || (!NullUtils.areEquals(initedAccountId, accountId))) {
 			initedAccountId = accountId;
 			RemoteFileListWorker worker = new RemoteFileListWorker(account);
 			worker.setPhase(getRemoteConnectingWording(), -1); //$NON-NLS-1$
@@ -150,6 +173,12 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				// The task was cancelled
 				setQuota(null);
 			}
+		}
+		
+		if (hasPendingSelected) {
+			hasPendingSelected = false;
+			int index = isSaveType()?0:filesModel.indexOf(pendingSelectedEntry);
+			if (index>=0) getFileNameField().setText(pendingSelectedEntry.getDisplayName());
 		}
 	}
 
@@ -352,17 +381,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 	
 	public void setSelectedURI(URI uri) {
-		if (uri==null) {
-			getFileNameField().setText(""); //$NON-NLS-1$
-		} else {
-			//FIXME
-			Entry entry = service.getEntry(uri);
-			System.out.println (entry+" is selected"); //$NON-NLS-1$
-//			FileId id = FileId.fromURI(uri);
-//			if (!getInfo().getAccount().displayName.equals(id.getAccount())) throw new IllegalArgumentException("invalid account"); //$NON-NLS-1$
-//			getFileNameField().setText(uri.getPath().substring(1));
-		}
-		selectedURI = uri;
+		pendingSelectedEntry = uri==null?null:this.service.getEntry(uri);
+		hasPendingSelected = true;
+		if (isShowing()) refresh(true);
 	}
 	
 	private JPanel getPanel() {
@@ -484,7 +505,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 
 	protected String getRemoteConnectingWording() {
-		return Messages.getString("Chooser.connecting"); //LOCAL //$NON-NLS-1$
+		return Messages.getString("Chooser.connecting"); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
