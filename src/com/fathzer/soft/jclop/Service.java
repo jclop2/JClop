@@ -19,6 +19,8 @@ import net.astesana.ajlib.utilities.StringUtils;
  */
 public abstract class Service {
 	static final String UTF_8 = "UTF-8";
+	static final String ZIP_SUFFIX = ".zip";
+	static final String FILE_PREFIX = "f_";
 	public static final String URI_DOMAIN = "cloud.astesana.net";
 
 	private File root;
@@ -35,6 +37,13 @@ public abstract class Service {
 		refreshAccounts();
 	}
 	
+	/** Gets the scheme of uri managed by this service.
+	 * <br>Files are identified by uri. This method returns the scheme of the uri of files managed by this service.
+	 * The scheme is considered as unique id for services.
+	 * @return the service uri scheme
+	 */
+	public abstract String getScheme();
+
 	/** Builds an account instance that is cached in a folder passed in argument.
 	 * @param folder The folder where the account is cached
 	 * @return An account, or null if the folder doesn't not contain a valid account.
@@ -72,27 +81,36 @@ public abstract class Service {
 		return root;
 	}
 
-	public abstract String getScheme();
-
-	/** Gets the remote path of a local name.
-	 * <br>By default, this method returns the local path preceded by a '/'.
-	 * @param localPath The remote path
-	 * @return the remote path
-	 * @see #getLocalPath(String)
+	/** Get the entry corresponding to a local cache file.
+	 * @param account The account where the path is located.
+	 * @param localPath The path of the local cache file, related to the account 
+	 * @return an entry or null if the entry is not a valid cache file.
 	 */
-	public String getRemotePath(String localPath) {
-		return '/'+localPath;
+	protected Entry getLocalEntry(Account account, String localPath) {
+		if (!localPath.startsWith(FILE_PREFIX)) return null;
+		return new Entry(account, localPath.substring(FILE_PREFIX.length()));
 	}
+	
+	/** Gets the remote path of an entry.
+	 * <br>By default, this method returns the local path preceded by a '/' and followed by ".zip", indicating that the file is zipped on the cloud storage.
+	 * @param entry The entry
+	 * @return the remote path
+	 * @see #getDisplayName(String)
+	 */
+//	private String getRemotePath(Entry entry) {
+//		return '/'+entry.getDisplayName()+ZIP_SUFFIX;
+//	}
 
 	/** Converts a remote path to a local name.
 	 * <br>This method can be used by getRemoteFiles method in order to filter remote files.
-	 * <br>By default, this method returns the remote path. If the path begins with a '/', it is removed.
+	 * <br>By default, this method returns the remote path without its ".zip" suffix. If the path begins with a '/', it is removed.
 	 * @param remotePath The remote path
 	 * @return the local path or null if the entry should be ignored
 	 * @see #getRemoteFiles(Account, Cancellable)
 	 */
-	public String getLocalPath(String remotePath) {
-		return remotePath.charAt(0)=='/'?remotePath.substring(1):remotePath;
+	protected Entry getRemoteEntry(Account account, String remotePath) {
+		if (remotePath.endsWith(ZIP_SUFFIX)) remotePath = remotePath.substring(0, remotePath.length()-ZIP_SUFFIX.length());
+		return new Entry (account, remotePath.charAt(0)=='/'?remotePath.substring(1):remotePath);
 	}
 	
 	/** Gets the URI of an entry.
@@ -102,7 +120,7 @@ public abstract class Service {
 	public final URI getURI(Entry entry) {
 		try {
 			Account account = entry.getAccount();
-			String path = getRemotePath(entry.getDisplayName());
+			String path = entry.getDisplayName();
 			StringBuilder builder = new StringBuilder();
 			builder.append(getScheme());
 			builder.append("://");
@@ -127,7 +145,6 @@ public abstract class Service {
 	/** Gets an Entry from its URI.
 	 * @param uri An URI
 	 * @return an Entry or null if the entry is not allowed by the service (getLocalPath returns null).
-	 * @see #getLocalPath(String)
 	 * @throws IllegalArgumentException if the uri is not supported or has a wrong format
 	 */
 	public final Entry getEntry(URI uri) {
@@ -136,7 +153,7 @@ public abstract class Service {
 			String path = URLDecoder.decode(uri.getPath().substring(1), UTF_8);
 			int index = path.indexOf('/');
 			String accountName = path.substring(0, index);
-			path = getLocalPath(path.substring(index));
+			path = path.substring(index+1);
 			if (path==null) return null;
 			String[] split = StringUtils.split(uri.getUserInfo(), ':');
 			String accountId = URLDecoder.decode(split[0], UTF_8);

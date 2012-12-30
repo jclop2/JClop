@@ -20,6 +20,7 @@ import com.fathzer.soft.jclop.Service;
  */
 public class Account {
 	private static final String INFO_FILENAME = ".info";
+
 	private File root;
 	Service service;
 	private String displayName;
@@ -159,7 +160,8 @@ public class Account {
 		if (files!=null) {
 			for (File file : files) {
 				if (file.isDirectory()) {
-					result.add(new Entry(this, file.getName()));
+					Entry entry = service.getLocalEntry(this, file.getName());
+					if (entry!=null) result.add(entry);
 				}
 			}
 		}
