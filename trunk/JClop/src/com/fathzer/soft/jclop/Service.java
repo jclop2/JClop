@@ -1,6 +1,9 @@
 package com.fathzer.soft.jclop;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -86,27 +89,43 @@ public abstract class Service {
 	 * @param localPath The path of the local cache file, related to the account 
 	 * @return an entry or null if the entry is not a valid cache file.
 	 */
-	protected Entry getLocalEntry(Account account, String localPath) {
-		if (!localPath.startsWith(FILE_PREFIX)) return null;
-		return new Entry(account, localPath.substring(FILE_PREFIX.length()));
+	protected final Entry getLocalEntry(Account account, String localPath) {
+		try {
+			if (!localPath.startsWith(FILE_PREFIX)) return null;
+			return new Entry(account, URLDecoder.decode(localPath.substring(FILE_PREFIX.length()), UTF_8));
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public final String getLocalPath(Entry entry) {
+		try {
+			return entry.getAccount().getRoot().getName()+"/"+FILE_PREFIX+URLEncoder.encode(entry.getDisplayName(), UTF_8);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/** Gets the remote path of an entry.
 	 * <br>By default, this method returns the local path preceded by a '/' and followed by ".zip", indicating that the file is zipped on the cloud storage.
+	 * <br>If you override this method to change that, don't forget to override getRemoteEntry too. 
 	 * @param entry The entry
 	 * @return the remote path
-	 * @see #getDisplayName(String)
+	 * @see #getRemoteEntry(Account, String)
 	 */
-//	private String getRemotePath(Entry entry) {
-//		return '/'+entry.getDisplayName()+ZIP_SUFFIX;
-//	}
+	public String getRemotePath(Entry entry) {
+		return '/'+entry.getDisplayName()+ZIP_SUFFIX;
+	}
 
-	/** Converts a remote path to a local name.
+	/** Converts a remote path to an entry.
 	 * <br>This method can be used by getRemoteFiles method in order to filter remote files.
 	 * <br>By default, this method returns the remote path without its ".zip" suffix. If the path begins with a '/', it is removed.
+	 * <br>If you override this method to change that, don't forget to override getRemotePath too. 
+	 * @param account The account
 	 * @param remotePath The remote path
-	 * @return the local path or null if the entry should be ignored
-	 * @see #getRemoteFiles(Account, Cancellable)
+	 * @return An entry or null if the entry should be ignored
+	 * @see #getRemoteEntries(Account, Cancellable)
+	 * @see #getRemotePath(Entry)
 	 */
 	protected Entry getRemoteEntry(Account account, String remotePath) {
 		if (remotePath.endsWith(ZIP_SUFFIX)) remotePath = remotePath.substring(0, remotePath.length()-ZIP_SUFFIX.length());
@@ -119,25 +138,42 @@ public abstract class Service {
 	 */
 	public final URI getURI(Entry entry) {
 		try {
+			return new URI(toString(entry, false));
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/** Gets a string representation of an URI that can safely be displayed on a screen.
+	 * <br>URI may contains secret informations (example: password).
+	 * @param uri The uri.
+	 * @return a String. Let say entry is the entry corresponding to the uri, this implementation returns the getScheme()://entry.getAccountName()/entry.getDisplayName().
+	 */
+	public String getDisplayable(URI uri) {
+		return toString(getEntry(uri), true);
+	}
+
+	private String toString(Entry entry, boolean secret) {
+		try {
 			Account account = entry.getAccount();
 			String path = entry.getDisplayName();
 			StringBuilder builder = new StringBuilder();
 			builder.append(getScheme());
 			builder.append("://");
-			builder.append(URLEncoder.encode(account.getId(), UTF_8));
-			builder.append(":");
-			builder.append(getConnectionDataURIFragment(account.getConnectionData()));
-			builder.append('@');
-			builder.append(URI_DOMAIN);
-			builder.append('/');
+			if (!secret) {
+				builder.append(URLEncoder.encode(account.getId(), UTF_8));
+				builder.append(":");
+				builder.append(getConnectionDataURIFragment(account.getConnectionData()));
+				builder.append('@');
+				builder.append(URI_DOMAIN);
+				builder.append('/');
+			}
 			builder.append(URLEncoder.encode(account.getDisplayName(), UTF_8));
 			builder.append('/');
 			if (path.startsWith("/")) path = path.substring(1);
 			builder.append(URLEncoder.encode(path, UTF_8));
-			return new URI(builder.toString());
+			return builder.toString();
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -170,9 +206,26 @@ public abstract class Service {
 			throw new RuntimeException(e);
 		}
 	}
-
-	public abstract Collection<Entry> getRemoteFiles(Account account, Cancellable task) throws UnreachableHostException;
-
+	
+	public abstract Collection<Entry> getRemoteEntries(Account account, Cancellable task) throws UnreachableHostException;
 	public abstract String getConnectionDataURIFragment(Serializable connectionData);
 	public abstract Serializable getConnectionData(String uriFragment);
+	
+	/** Downloads the uri to a file.
+	 * @param entry The entry to download.
+	 * @param out The stream where to download
+	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the download if the task is cancelled.
+	 * @return true if the upload is done, false if it was cancelled
+	 * @throws IOException 
+	 */
+	public abstract boolean download(Entry entry, OutputStream out, Cancellable task) throws IOException;
+
+	/** Uploads a file to a destination uri.
+	 * @param in The inputStream from which to read to uploaded bytes
+	 * @param length The number of bytes to upload
+	 * @param entry The entry where to upload.
+	 * @return true if the upload is done, false if it was cancelled
+	 * @throws IOException 
+	 */
+	public abstract boolean upload(InputStream in, long length, Entry entry, Cancellable task) throws IOException;
 }

@@ -25,7 +25,7 @@ public class Entry implements Comparable<Entry> {
 	
 	@Override
 	public int compareTo(Entry o) {
-		int result = this.account.getDisplayName().compareTo(o.getDisplayName());
+		int result = this.account.getId().compareTo(o.getAccount().getId());
 		if (result==0) result = this.displayName.compareTo(o.displayName);
 		return result;
 	}
@@ -47,5 +47,12 @@ public class Entry implements Comparable<Entry> {
 		return account.equals(((Entry) obj).getAccount()) && displayName.equals(((Entry) obj).getDisplayName());
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return account.getId()+"/"+displayName;
+	}
 
 }

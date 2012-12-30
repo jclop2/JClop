@@ -154,7 +154,7 @@ public class Account {
 		file.delete();
 	}
 	
-	public Collection<Entry> getLocalFiles() {
+	public Collection<Entry> getLocalEntries() {
 		Collection<Entry> result = new ArrayList<Entry>();
 		File[] files = this.root.listFiles();
 		if (files!=null) {
@@ -185,7 +185,11 @@ public class Account {
 		return getId().equals(((Account)obj).getId());
 	}
 
-	public Collection<Entry> getRemoteFiles(Cancellable task) throws UnreachableHostException {
-		return this.service.getRemoteFiles(this, task);
+//	public Collection<Entry> getRemoteFiles(Cancellable task) throws UnreachableHostException {
+//		return this.service.getRemoteFiles(this, task);
+//	}
+	
+	File getRoot() {
+		return this.root;
 	}
 }
