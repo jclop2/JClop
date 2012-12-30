@@ -57,24 +57,24 @@ public class Account {
 		this.connectionData = connectionData;
 		this.quota = quota;
 		this.used = used;
+		try {
+			this.root = new File(service.getCacheRoot(), URLEncoder.encode(id, Service.UTF_8));
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public void serialize() throws IOException {
+		if (this.root.isFile()) this.root.delete();
+		this.root.mkdirs();
+		if (!this.root.isDirectory()) throw new IOException();
+		File connectionDataFile = new File(this.root, INFO_FILENAME);
+		ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(connectionDataFile));
 		try {
-			this.root = new File(service.getCacheRoot(), URLEncoder.encode(id, Service.UTF_8));
-			if (this.root.isFile()) this.root.delete();
-			this.root.mkdirs();
-			if (!this.root.isDirectory()) throw new IOException();
-			File connectionDataFile = new File(this.root, INFO_FILENAME);
-			ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(connectionDataFile));
-			try {
-				stream.writeObject(this.displayName);
-				stream.writeObject(this.connectionData);
-			} finally {
-				stream.close();
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
+			stream.writeObject(this.displayName);
+			stream.writeObject(this.connectionData);
+		} finally {
+			stream.close();
 		}
 	}
 	
@@ -155,9 +155,12 @@ public class Account {
 	
 	public Collection<Entry> getLocalFiles() {
 		Collection<Entry> result = new ArrayList<Entry>();
-		for (File file : this.root.listFiles()) {
-			if (file.isDirectory()) {
-				result.add(new Entry(this, file.getName()));
+		File[] files = this.root.listFiles();
+		if (files!=null) {
+			for (File file : files) {
+				if (file.isDirectory()) {
+					result.add(new Entry(this, file.getName()));
+				}
 			}
 		}
 		return result;
