@@ -125,7 +125,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 
 	public void refresh(boolean force) {
-		System.out.println ("refresh was called"); //FIXME
+		boolean isNewAccount = false;
 		if (hasPendingSelected) {
 			if (pendingSelectedEntry==null) {
 				getFileNameField().setText(""); //$NON-NLS-1$
@@ -135,9 +135,11 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				getAccountsCombo().setActionEnabled(false);
 				if (!getAccountsCombo().contains(entry.getAccount())) {
 					getAccountsCombo().addItem(entry.getAccount());
+					isNewAccount = true;
 				}
 				getAccountsCombo().setSelectedItem(entry.getAccount());
 				getAccountsCombo().setActionEnabled(old);
+				doAccountSelectionChanged();
 			}
 		}
 
@@ -154,8 +156,15 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			frame.setVisible(true); //$NON-NLS-1$
 			try {
 				Collection<Entry> entries = worker.get();
-				fillTable(entries);
-				getFileNameField().setEditable(true);
+				// Update the file list
+				filesModel.clear();
+				for (Entry entry : entries) {
+					Entry filtered = filter(entry);
+					if (filtered!=null) filesModel.add(entry);
+				}
+				// Re-select the previously selected one (changing the model erases the selection)
+				selectByFileName();
+				// Display quota data
 				setQuota(account);
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
@@ -179,6 +188,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			hasPendingSelected = false;
 			int index = isSaveType()?0:filesModel.indexOf(pendingSelectedEntry);
 			if (index>=0) getFileNameField().setText(pendingSelectedEntry.getDisplayName());
+			if (isNewAccount) {
+				serialize(account);
+			}
 		}
 	}
 
@@ -262,29 +274,14 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
 					int pos = fileNameField.getCaretPosition();
-					int index = -1;
-					for (int rowIndex=0;rowIndex<filesModel.getRowCount();rowIndex++) {
-						if (filesModel.getValueAt(rowIndex, 0).equals(evt.getNewValue())) {
-							index = rowIndex;
-							break;
-						}
-					}
-					ListSelectionModel selectionModel = getFileList().getSelectionModel();
-					if (index<0) {
-						selectionModel.clearSelection();
-					} else {
-						selectionModel.setSelectionInterval(index, index);
-					}
+					selectByFileName();
 					URI old = selectedURI;
 					String name = getFileNameField().getText();
 					Account account = (Account) getAccountsCombo().getSelectedItem();
-					if (account!=null) {
-						Entry entry = new Entry(account, name); 
-						selectedURI = ((account==null) || (name.length()==0))?null:getService().getURI(entry);
-						firePropertyChange(SELECTED_URI_PROPERTY, old, getSelectedURI());
-						pos = Math.min(pos, fileNameField.getText().length());
-						fileNameField.setCaretPosition(pos);
-					}
+					selectedURI = ((account==null) || (name.length()==0))?null:getService().getURI(new Entry(account, name));
+					firePropertyChange(SELECTED_URI_PROPERTY, old, getSelectedURI());
+					pos = Math.min(pos, fileNameField.getText().length());
+					fileNameField.setCaretPosition(pos);
 				}
 			});
 		}
@@ -311,13 +308,14 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			gbc_panel.gridy = 0;
 			northPanel.add(getPanel(), gbc_panel);
 			GridBagConstraints gbc_refreshButton = new GridBagConstraints();
-			gbc_refreshButton.gridheight = 0;
+			gbc_refreshButton.gridheight = 1;
 			gbc_refreshButton.gridx = 1;
 			gbc_refreshButton.gridy = 0;
 			northPanel.add(getRefreshButton(), gbc_refreshButton);
 			GridBagConstraints gbc_progressBar = new GridBagConstraints();
 			gbc_progressBar.fill = GridBagConstraints.HORIZONTAL;
-			gbc_progressBar.insets = new Insets(5, 0, 5, 5);
+			gbc_progressBar.insets = new Insets(5, 0, 5, 0);
+			gbc_progressBar.gridwidth = 0;
 			gbc_progressBar.gridx = 0;
 			gbc_progressBar.gridy = 1;
 			northPanel.add(getProgressBar(), gbc_progressBar);
@@ -327,8 +325,6 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JButton getRefreshButton() {
 		if (refreshButton == null) {
 			refreshButton = new JButton();
-			int height = getAccountsCombo().getPreferredSize().height;
-			refreshButton.setPreferredSize(new Dimension(height, height));
 			refreshButton.setToolTipText(Messages.getString("Chooser.refresh.tooltip"));  //$NON-NLS-1$
 			refreshButton.setEnabled(getAccountsCombo().getItemCount()!=0);
 			refreshButton.addActionListener(new ActionListener() {
@@ -346,14 +342,6 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			progressBar.setVisible(false);
 		}
 		return progressBar;
-	}
-
-	private void fillTable(Collection<Entry> entries) {
-		filesModel.clear();
-		for (Entry entry : entries) {
-			Entry filtered = filter(entry);
-			if (filtered!=null) filesModel.add(entry);
-		}
 	}
 
 	/** Filters an entry.
@@ -433,10 +421,8 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			accountsCombo.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					boolean oneIsSelected = getAccountsCombo().getSelectedIndex()>=0;
-					getDeleteButton().setEnabled(oneIsSelected);
-					getRefreshButton().setEnabled(oneIsSelected);
-					refresh(!oneIsSelected);
+					doAccountSelectionChanged();
+					refresh(accountsCombo.getSelectedItem()==null);
 				}
 			});
 		}
@@ -461,12 +447,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 							}
 						}
 						// Save the account data to disk
-						try {
-							account.serialize();
-						} catch (IOException e) {
-							//FIXME Alert the user something went wrong
-							e.printStackTrace();
-						}
+						serialize(account);
 						getAccountsCombo().addItem(account);
 						getAccountsCombo().setSelectedItem(account);
 					}
@@ -491,6 +472,8 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 						Account account = (Account) getAccountsCombo().getSelectedItem();
 						getAccountsCombo().removeItemAt(getAccountsCombo().getSelectedIndex());
 						account.delete();
+						getFileNameField().setText(""); // Erases the current selection
+						getFileNameField().setEditable(getAccountsCombo().getItemCount()>0);
 					}
 				}
 			});
@@ -548,6 +531,37 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		return getFileList().getSelectedRow()>=0;
 	}
 	
+	private void serialize(Account account) {
+		try {
+			account.serialize();
+		} catch (IOException e) {
+			showError(Utils.getOwnerWindow(getNewButton()), Messages.getString("Error.unableToSerializeAccount"));
+		}
+	}
+
+	private void selectByFileName() {
+		int index = -1;
+		for (int rowIndex=0;rowIndex<filesModel.getRowCount();rowIndex++) {
+			if (filesModel.getValueAt(rowIndex, 0).equals(fileNameField.getText())) {
+				index = rowIndex;
+				break;
+			}
+		}
+		ListSelectionModel selectionModel = getFileList().getSelectionModel();
+		if (index<0) {
+			selectionModel.clearSelection();
+		} else {
+			selectionModel.setSelectionInterval(index, index);
+		}
+	}
+
+	private void doAccountSelectionChanged() {
+		boolean oneIsSelected = getAccountsCombo().getSelectedIndex()>=0;
+		getDeleteButton().setEnabled(oneIsSelected);
+		getRefreshButton().setEnabled(oneIsSelected);
+		getFileNameField().setEditable(oneIsSelected);
+	}
+
 	public static void showError(Window owner, String message) {
 		JOptionPane.showMessageDialog(owner, message, Messages.getString("Error.title"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 	}
