@@ -52,7 +52,7 @@ class MultipleURIChooserPanel extends JTabbedPane {
 				}
 			});
 		}
-		setDialogType(false);
+		setSaveType(false);
 		ChangeListener listener = new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -60,7 +60,7 @@ class MultipleURIChooserPanel extends JTabbedPane {
 				boolean hasSelectedTab = getSelectedComponent()!=null;
 				selectedURI = hasSelectedTab?((URIChooser)getSelectedComponent()).getSelectedURI():null;
 				if (!NullUtils.areEquals(old, selectedURI)) firePropertyChange(SELECTED_URI_PROPERTY, old, selectedURI);
-				if (hasSelectedTab) setUp(getSelectedIndex());
+				if (hasSelectedTab && isShowing()) setUp(getSelectedIndex());
 			}
 		};
 		addChangeListener(listener);
@@ -73,16 +73,16 @@ class MultipleURIChooserPanel extends JTabbedPane {
 		}
 	}
 
-	public void setDialogType(boolean save) {
+	public void setSaveType(boolean save) {
 		this.isSave = save;
 		for (int i = 0; i < this.getTabCount(); i++) {
 			URIChooser tab = (URIChooser)this.getComponentAt(i);
 			this.setToolTipTextAt(i, tab.getTooltip(save));
-			tab.setDialogType(save);
+			tab.setSaveType(save);
 		}
 	}
 	
-	public boolean isSaveDialogType() {
+	public boolean isSaveType() {
 		return isSave;
 	}
 

@@ -85,7 +85,7 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	public void setUp() {}
 
 	@Override
-	public void setDialogType(boolean save) {
+	public void setSaveType(boolean save) {
 		this.fileChooser.setDialogType(save?FileChooser.SAVE_DIALOG:FileChooser.OPEN_DIALOG);
 	}
 

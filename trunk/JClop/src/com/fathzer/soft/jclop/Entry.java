@@ -25,6 +25,27 @@ public class Entry implements Comparable<Entry> {
 	
 	@Override
 	public int compareTo(Entry o) {
-		return this.displayName.compareTo(o.displayName);
+		int result = this.account.getDisplayName().compareTo(o.getDisplayName());
+		if (result==0) result = this.displayName.compareTo(o.displayName);
+		return result;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return account.hashCode()+displayName.hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Entry)) return super.equals(obj);
+		return account.equals(((Entry) obj).getAccount()) && displayName.equals(((Entry) obj).getDisplayName());
+	}
+	
+
 }

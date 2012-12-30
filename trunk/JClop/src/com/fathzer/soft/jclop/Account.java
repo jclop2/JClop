@@ -163,6 +163,23 @@ public class Account {
 		return result;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return getId().hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Account)) return super.equals(obj);
+		return getId().equals(((Account)obj).getId());
+	}
+
 	public Collection<Entry> getRemoteFiles(Cancellable task) throws UnreachableHostException {
 		return this.service.getRemoteFiles(this, task);
 	}
