@@ -46,12 +46,12 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	
 	@Override
 	public String getTitle() {
-		return MessagesPack.getString("FileChooserPanel.title", getLocale()); //$NON-NLS-1$
+		return MessagePack.getString("com.fathzer.soft.jclop.FileChooserPanel.title", getLocale()); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getTooltip(boolean save) {
-		return MessagesPack.getString(save?"FileChooserPanel.tooltip.save":"FileChooserPanel.tooltip.open", getLocale()); //$NON-NLS-1$ //$NON-NLS-2$
+		return MessagePack.getString(save?"com.fathzer.soft.jclop.FileChooserPanel.tooltip.save":"com.fathzer.soft.jclop.FileChooserPanel.tooltip.open", getLocale()); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	@Override
