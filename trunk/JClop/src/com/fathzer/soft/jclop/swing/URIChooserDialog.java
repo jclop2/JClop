@@ -8,6 +8,7 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URI;
+import java.util.Locale;
 
 import javax.swing.JPanel;
 
@@ -77,7 +78,7 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 
 	@Override
 	protected String getOkDisabledCause() {
-		if (getSelectedURI()==null) return Messages.getString("URIChooserDialog.noFileSelected"); //$NON-NLS-1$
+		if (getSelectedURI()==null) return MessagesPack.getString("URIChooserDialog.noFileSelected", getLocale()); //$NON-NLS-1$
 		return null;
 	}
 
@@ -102,7 +103,7 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	 */
 	public void setSaveDialog(boolean save) {
 		if (save!=saveDialog) {
-			getOkButton().setText(save?Messages.getString("URIChooserDialog.saveButton.title"):Messages.getString("URIChooserDialog.openButton.title")); //$NON-NLS-1$ //$NON-NLS-2$
+			getOkButton().setText(save?MessagesPack.getString("URIChooserDialog.saveButton.title", getLocale()):MessagesPack.getString("URIChooserDialog.openButton.title", getLocale())); //$NON-NLS-1$ //$NON-NLS-2$
 			for (URIChooser panel : data) {
 				panel.setSaveType(save);
 			}
@@ -138,4 +139,14 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 			multiplePanel.setSelectedComponent((Component) panel);
 		}
 	}
+	
+//	public void setLocale(Locale locale) {
+//		super.setLocale(locale);
+//		if (data!=null) {
+//			System.out.println (getLocale());
+//			for (URIChooser chooser : data) {
+//				chooser.setLocale(locale);
+//			}
+//		}
+//	}
 }

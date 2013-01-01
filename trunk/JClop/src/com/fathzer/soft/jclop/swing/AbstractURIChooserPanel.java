@@ -24,6 +24,7 @@ import java.net.URI;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
@@ -150,7 +151,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			RemoteFileListWorker worker = new RemoteFileListWorker(account);
 			worker.setPhase(getRemoteConnectingWording(), -1); //$NON-NLS-1$
 			final Window owner = Utils.getOwnerWindow(this);
-			WorkInProgressFrame frame = new WorkInProgressFrame(owner, Messages.getString("GenericWait.title"), ModalityType.APPLICATION_MODAL, worker); //$NON-NLS-1$
+			WorkInProgressFrame frame = new WorkInProgressFrame(owner, MessagesPack.getString("GenericWait.title", getLocale()), ModalityType.APPLICATION_MODAL, worker); //$NON-NLS-1$
 			frame.setSize(300, frame.getSize().height);
 			Utils.centerWindow(frame, owner);
 			frame.setVisible(true); //$NON-NLS-1$
@@ -199,20 +200,20 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			long percentUsed = 100*(account.getUsed()) / account.getQuota(); 
 			getProgressBar().setValue((int)percentUsed);
 			double remaining = account.getQuota()-account.getUsed();
-			String unit = Messages.getString("Generic.data.unit.bytes"); //$NON-NLS-1$
+			String unit = MessagesPack.getString("Generic.data.unit.bytes", getLocale()); //$NON-NLS-1$
 			if (remaining>1024) {
-				unit = Messages.getString("Generic.data.unit.kBytes"); //$NON-NLS-1$
+				unit = MessagesPack.getString("Generic.data.unit.kBytes", getLocale()); //$NON-NLS-1$
 				remaining = remaining/1024;
 				if (remaining>1024) {
-					unit = Messages.getString("Generic.data.unit.MBytes"); //$NON-NLS-1$
+					unit = MessagesPack.getString("Generic.data.unit.MBytes", getLocale()); //$NON-NLS-1$
 					remaining = remaining/1024;
 					if (remaining>1024) {
-						unit = Messages.getString("Generic.data.unit.GBytes"); //$NON-NLS-1$
+						unit = MessagesPack.getString("Generic.data.unit.GBytes", getLocale()); //$NON-NLS-1$
 						remaining = remaining/1024;
 					}
 				}
 			}
-			getProgressBar().setString(MessageFormat.format(Messages.getString("Chooser.freeSpace"), new DecimalFormat("0.0").format(remaining), unit)); //$NON-NLS-1$ //$NON-NLS-2$
+			getProgressBar().setString(MessageFormat.format(MessagesPack.getString("Chooser.freeSpace", getLocale()), new DecimalFormat("0.0").format(remaining), unit)); //$NON-NLS-1$ //$NON-NLS-2$
 			getProgressBar().setVisible(true);
 		} else {
 			getProgressBar().setVisible(false);
@@ -262,7 +263,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 	private JLabel getLblNewLabel() {
 		if (lblNewLabel == null) {
-			lblNewLabel = new JLabel(Messages.getString("Chooser.fileName"));  //$NON-NLS-1$
+			lblNewLabel = new JLabel(MessagesPack.getString("Chooser.fileName", getLocale()));  //$NON-NLS-1$
 		}
 		return lblNewLabel;
 	}
@@ -290,7 +291,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	
 	private JLabel getLblAccount() {
 		if (lblAccount == null) {
-			lblAccount = new JLabel(Messages.getString("Chooser.account")); //$NON-NLS-1$
+			lblAccount = new JLabel(MessagesPack.getString("Chooser.account", getLocale())); //$NON-NLS-1$
 		}
 		return lblAccount;
 	}
@@ -325,7 +326,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JButton getRefreshButton() {
 		if (refreshButton == null) {
 			refreshButton = new JButton();
-			refreshButton.setToolTipText(Messages.getString("Chooser.refresh.tooltip"));  //$NON-NLS-1$
+			refreshButton.setToolTipText(MessagesPack.getString("Chooser.refresh.tooltip", getLocale()));  //$NON-NLS-1$
 			refreshButton.setEnabled(getAccountsCombo().getItemCount()!=0);
 			refreshButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -431,7 +432,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JButton getNewButton() {
 		if (newButton == null) {
 			newButton = new JButton();
-			newButton.setToolTipText(Messages.getString("Chooser.new.tooltip")); //$NON-NLS-1$
+			newButton.setToolTipText(MessagesPack.getString("Chooser.new.tooltip", getLocale())); //$NON-NLS-1$
 			int height = getAccountsCombo().getPreferredSize().height;
 			newButton.setPreferredSize(new Dimension(height, height));
 			newButton.addActionListener(new ActionListener() {
@@ -460,14 +461,14 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		if (deleteButton == null) {
 			deleteButton = new JButton();
 			deleteButton.setEnabled(getAccountsCombo().getItemCount()!=0);
-			deleteButton.setToolTipText(Messages.getString("Chooser.delete.tooltip")); //$NON-NLS-1$
+			deleteButton.setToolTipText(MessagesPack.getString("Chooser.delete.tooltip", getLocale())); //$NON-NLS-1$
 			int height = getAccountsCombo().getPreferredSize().height;
 			deleteButton.setPreferredSize(new Dimension(height, height));
 			deleteButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					boolean confirm = JOptionPane.showOptionDialog(Utils.getOwnerWindow(deleteButton), Messages.getString("Chooser.delete.message"), Messages.getString("Chooser.delete.message.title"), //$NON-NLS-1$ //$NON-NLS-2$
-							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{Messages.getString("Chooser.delete"),Application.getString("GenericButton.cancel")},1)==0; //$NON-NLS-1$ //$NON-NLS-2$
+					boolean confirm = JOptionPane.showOptionDialog(Utils.getOwnerWindow(deleteButton), MessagesPack.getString("Chooser.delete.message", getLocale()), MessagesPack.getString("Chooser.delete.message.title", getLocale()), //$NON-NLS-1$ //$NON-NLS-2$
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{MessagesPack.getString("Chooser.delete", getLocale()),Application.getString("GenericButton.cancel")},1)==0; //$NON-NLS-1$ //$NON-NLS-2$
 					if (confirm) {
 						Account account = (Account) getAccountsCombo().getSelectedItem();
 						getAccountsCombo().removeItemAt(getAccountsCombo().getSelectedIndex());
@@ -488,7 +489,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 
 	protected String getRemoteConnectingWording() {
-		return Messages.getString("Chooser.connecting"); //$NON-NLS-1$
+		return MessagesPack.getString("Chooser.connecting", getLocale()); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
@@ -535,7 +536,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		try {
 			account.serialize();
 		} catch (IOException e) {
-			showError(Utils.getOwnerWindow(getNewButton()), Messages.getString("Error.unableToSerializeAccount"));
+			showError(Utils.getOwnerWindow(getNewButton()), MessagesPack.getString("Error.unableToSerializeAccount", getLocale()), getLocale());
 		}
 	}
 
@@ -562,7 +563,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		getFileNameField().setEditable(oneIsSelected);
 	}
 
-	public static void showError(Window owner, String message) {
-		JOptionPane.showMessageDialog(owner, message, Messages.getString("Error.title"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+	public static void showError(Window owner, String message, Locale locale) {
+		JOptionPane.showMessageDialog(owner, message, MessagesPack.getString("Error.title", locale), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 	}
 }

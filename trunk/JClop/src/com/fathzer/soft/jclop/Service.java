@@ -12,6 +12,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 
 import net.astesana.ajlib.utilities.StringUtils;
 
@@ -215,17 +216,20 @@ public abstract class Service {
 	 * @param entry The entry to download.
 	 * @param out The stream where to download
 	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the download if the task is cancelled.
+	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
 	 * @return true if the upload is done, false if it was cancelled
 	 * @throws IOException 
 	 */
-	public abstract boolean download(Entry entry, OutputStream out, Cancellable task) throws IOException;
+	public abstract boolean download(Entry entry, OutputStream out, Cancellable task, Locale locale) throws IOException;
 
 	/** Uploads a file to a destination uri.
 	 * @param in The inputStream from which to read to uploaded bytes
 	 * @param length The number of bytes to upload
 	 * @param entry The entry where to upload.
+	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the upload if the task is cancelled.
+ 	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
 	 * @return true if the upload is done, false if it was cancelled
 	 * @throws IOException 
 	 */
-	public abstract boolean upload(InputStream in, long length, Entry entry, Cancellable task) throws IOException;
+	public abstract boolean upload(InputStream in, long length, Entry entry, Cancellable task, Locale locale) throws IOException;
 }

@@ -1,6 +1,7 @@
 package com.fathzer.soft.jclop.swing;
 
 import java.net.URI;
+import java.util.Locale;
 
 import javax.swing.Icon;
 
@@ -80,4 +81,6 @@ public interface URIChooser {
 	 * @return true if the selected URI exists, false if not or if no URI is selected
 	 */
 	public boolean isSelectedExist();
+
+//	public void setLocale(Locale locale);
 }
