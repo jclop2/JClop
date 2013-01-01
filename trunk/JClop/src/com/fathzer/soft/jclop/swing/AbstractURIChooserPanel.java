@@ -57,7 +57,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JPanel centerPanel;
 	private JTable fileList;
 	private JPanel filePanel;
-	private JLabel lblNewLabel;
+	private JLabel lblFileName;
 	private TextWidget fileNameField;
 	
 	private JLabel lblAccount;
@@ -151,7 +151,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			RemoteFileListWorker worker = new RemoteFileListWorker(account);
 			worker.setPhase(getRemoteConnectingWording(), -1); //$NON-NLS-1$
 			final Window owner = Utils.getOwnerWindow(this);
-			WorkInProgressFrame frame = new WorkInProgressFrame(owner, MessagesPack.getString("GenericWait.title", getLocale()), ModalityType.APPLICATION_MODAL, worker); //$NON-NLS-1$
+			WorkInProgressFrame frame = new WorkInProgressFrame(owner, MessagePack.getString("com.fathzer.soft.jclop.GenericWait.title", getLocale()), ModalityType.APPLICATION_MODAL, worker); //$NON-NLS-1$
 			frame.setSize(300, frame.getSize().height);
 			Utils.centerWindow(frame, owner);
 			frame.setVisible(true); //$NON-NLS-1$
@@ -200,20 +200,20 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			long percentUsed = 100*(account.getUsed()) / account.getQuota(); 
 			getProgressBar().setValue((int)percentUsed);
 			double remaining = account.getQuota()-account.getUsed();
-			String unit = MessagesPack.getString("Generic.data.unit.bytes", getLocale()); //$NON-NLS-1$
+			String unit = MessagePack.getString("com.fathzer.soft.jclop.Generic.data.unit.bytes", getLocale()); //$NON-NLS-1$
 			if (remaining>1024) {
-				unit = MessagesPack.getString("Generic.data.unit.kBytes", getLocale()); //$NON-NLS-1$
+				unit = MessagePack.getString("com.fathzer.soft.jclop.Generic.data.unit.kBytes", getLocale()); //$NON-NLS-1$
 				remaining = remaining/1024;
 				if (remaining>1024) {
-					unit = MessagesPack.getString("Generic.data.unit.MBytes", getLocale()); //$NON-NLS-1$
+					unit = MessagePack.getString("com.fathzer.soft.jclop.Generic.data.unit.MBytes", getLocale()); //$NON-NLS-1$
 					remaining = remaining/1024;
 					if (remaining>1024) {
-						unit = MessagesPack.getString("Generic.data.unit.GBytes", getLocale()); //$NON-NLS-1$
+						unit = MessagePack.getString("com.fathzer.soft.jclop.Generic.data.unit.GBytes", getLocale()); //$NON-NLS-1$
 						remaining = remaining/1024;
 					}
 				}
 			}
-			getProgressBar().setString(MessageFormat.format(MessagesPack.getString("Chooser.freeSpace", getLocale()), new DecimalFormat("0.0").format(remaining), unit)); //$NON-NLS-1$ //$NON-NLS-2$
+			getProgressBar().setString(MessageFormat.format(MessagePack.getString("com.fathzer.soft.jclop.Chooser.freeSpace", getLocale()), new DecimalFormat("0.0").format(remaining), unit)); //$NON-NLS-1$ //$NON-NLS-2$
 			getProgressBar().setVisible(true);
 		} else {
 			getProgressBar().setVisible(false);
@@ -256,16 +256,16 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		if (filePanel == null) {
 			filePanel = new JPanel();
 			filePanel.setLayout(new BorderLayout(0, 0));
-			filePanel.add(getLblNewLabel(), BorderLayout.WEST);
+			filePanel.add(getLblFileName(), BorderLayout.WEST);
 			filePanel.add(getFileNameField(), BorderLayout.CENTER);
 		}
 		return filePanel;
 	}
-	private JLabel getLblNewLabel() {
-		if (lblNewLabel == null) {
-			lblNewLabel = new JLabel(MessagesPack.getString("Chooser.fileName", getLocale()));  //$NON-NLS-1$
+	private JLabel getLblFileName() {
+		if (lblFileName == null) {
+			lblFileName = new JLabel(MessagePack.getString("com.fathzer.soft.jclop.Chooser.fileName", getLocale()));  //$NON-NLS-1$
 		}
-		return lblNewLabel;
+		return lblFileName;
 	}
 	private TextWidget getFileNameField() {
 		if (fileNameField == null) {
@@ -291,7 +291,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	
 	private JLabel getLblAccount() {
 		if (lblAccount == null) {
-			lblAccount = new JLabel(MessagesPack.getString("Chooser.account", getLocale())); //$NON-NLS-1$
+			lblAccount = new JLabel(MessagePack.getString("com.fathzer.soft.jclop.Chooser.account", getLocale())); //$NON-NLS-1$
 		}
 		return lblAccount;
 	}
@@ -326,7 +326,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JButton getRefreshButton() {
 		if (refreshButton == null) {
 			refreshButton = new JButton();
-			refreshButton.setToolTipText(MessagesPack.getString("Chooser.refresh.tooltip", getLocale()));  //$NON-NLS-1$
+			refreshButton.setToolTipText(MessagePack.getString("com.fathzer.soft.jclop.Chooser.refresh.tooltip", getLocale()));  //$NON-NLS-1$
 			refreshButton.setEnabled(getAccountsCombo().getItemCount()!=0);
 			refreshButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -432,7 +432,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JButton getNewButton() {
 		if (newButton == null) {
 			newButton = new JButton();
-			newButton.setToolTipText(MessagesPack.getString("Chooser.new.tooltip", getLocale())); //$NON-NLS-1$
+			newButton.setToolTipText(MessagePack.getString("com.fathzer.soft.jclop.Chooser.new.tooltip", getLocale())); //$NON-NLS-1$
 			int height = getAccountsCombo().getPreferredSize().height;
 			newButton.setPreferredSize(new Dimension(height, height));
 			newButton.addActionListener(new ActionListener() {
@@ -461,14 +461,14 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		if (deleteButton == null) {
 			deleteButton = new JButton();
 			deleteButton.setEnabled(getAccountsCombo().getItemCount()!=0);
-			deleteButton.setToolTipText(MessagesPack.getString("Chooser.delete.tooltip", getLocale())); //$NON-NLS-1$
+			deleteButton.setToolTipText(MessagePack.getString("com.fathzer.soft.jclop.Chooser.delete.tooltip", getLocale())); //$NON-NLS-1$
 			int height = getAccountsCombo().getPreferredSize().height;
 			deleteButton.setPreferredSize(new Dimension(height, height));
 			deleteButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					boolean confirm = JOptionPane.showOptionDialog(Utils.getOwnerWindow(deleteButton), MessagesPack.getString("Chooser.delete.message", getLocale()), MessagesPack.getString("Chooser.delete.message.title", getLocale()), //$NON-NLS-1$ //$NON-NLS-2$
-							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{MessagesPack.getString("Chooser.delete", getLocale()),Application.getString("GenericButton.cancel")},1)==0; //$NON-NLS-1$ //$NON-NLS-2$
+					boolean confirm = JOptionPane.showOptionDialog(Utils.getOwnerWindow(deleteButton), MessagePack.getString("com.fathzer.soft.jclop.Chooser.delete.message", getLocale()), MessagePack.getString("com.fathzer.soft.jclop.Chooser.delete.message.title", getLocale()), //$NON-NLS-1$ //$NON-NLS-2$
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{MessagePack.getString("com.fathzer.soft.jclop.Chooser.delete", getLocale()),Application.getString("GenericButton.cancel")},1)==0; //$NON-NLS-1$ //$NON-NLS-2$
 					if (confirm) {
 						Account account = (Account) getAccountsCombo().getSelectedItem();
 						getAccountsCombo().removeItemAt(getAccountsCombo().getSelectedIndex());
@@ -489,7 +489,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 
 	protected String getRemoteConnectingWording() {
-		return MessagesPack.getString("Chooser.connecting", getLocale()); //$NON-NLS-1$
+		return MessagePack.getString("com.fathzer.soft.jclop.Chooser.connecting", getLocale()); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
@@ -536,7 +536,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		try {
 			account.serialize();
 		} catch (IOException e) {
-			showError(Utils.getOwnerWindow(getNewButton()), MessagesPack.getString("Error.unableToSerializeAccount", getLocale()), getLocale());
+			showError(Utils.getOwnerWindow(getNewButton()), MessagePack.getString("com.fathzer.soft.jclop.Error.unableToSerializeAccount", getLocale()), getLocale());
 		}
 	}
 
@@ -564,6 +564,6 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 
 	public static void showError(Window owner, String message, Locale locale) {
-		JOptionPane.showMessageDialog(owner, message, MessagesPack.getString("Error.title", locale), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+		JOptionPane.showMessageDialog(owner, message, MessagePack.getString("com.fathzer.soft.jclop.Error.title", locale), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 	}
 }
