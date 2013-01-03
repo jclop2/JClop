@@ -12,9 +12,11 @@ public final class IconPack {
 	private Icon newAccount; 
 	private Icon deleteAccount; 
 	private Icon synchronize; 
+	private Icon linked; 
+	private Icon notLinked; 
 	
 	public IconPack() {}
-	
+
 	public Icon getSynchronize() {
 		if (synchronize==null) {
 			synchronize = new ImageIcon(IconPack.class.getResource("synchronize.png")); //$NON-NLS-1$
@@ -34,6 +36,20 @@ public final class IconPack {
 			deleteAccount = new ImageIcon(IconPack.class.getResource("delete.png")); //$NON-NLS-1$
 		}
 		return deleteAccount;
+	}
+
+	public Icon getLinked() {
+		if (linked==null) {
+			linked = new ImageIcon(IconPack.class.getResource("linked.png")); //$NON-NLS-1$
+		}
+		return linked;
+	}
+
+	public Icon getNotLinked() {
+		if (notLinked==null) {
+			notLinked = new ImageIcon(IconPack.class.getResource("notLinked.png")); //$NON-NLS-1$
+		}
+		return notLinked;
 	}
 
 	/** Sets the "new Account" button icon
@@ -56,4 +72,19 @@ public final class IconPack {
 	public void setSynchronize(Icon icon) {
 		this.synchronize = icon;
 	}
+
+	/** Sets the "linked" icon
+	 * @param icon the synchronize to set
+	 */
+	public void setLinked(Icon icon) {
+		this.linked = icon;
+	}
+
+	/** Sets the "not linked" icon
+	 * @param icon the synchronize to set
+	 */
+	public void setNotLinked(Icon icon) {
+		this.notLinked = icon;
+	}
+	
 }

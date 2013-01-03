@@ -25,6 +25,7 @@ import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.TreeSet;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
@@ -51,6 +52,7 @@ import javax.swing.JScrollPane;
 import com.fathzer.soft.jclop.Account;
 import com.fathzer.soft.jclop.Entry;
 import com.fathzer.soft.jclop.Service;
+import com.fathzer.soft.jclop.UnreachableHostException;
 
 @SuppressWarnings("serial")
 public abstract class AbstractURIChooserPanel extends JPanel implements URIChooser {
@@ -73,15 +75,19 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JButton deleteButton;
 	private Service service;
 	private String initedAccountId;
+	private boolean linked;
 	
 	private IconPack icons;
 	private URI selectedURI;
 	private Entry pendingSelectedEntry;
 	private boolean hasPendingSelected;
+	private JLabel statusIcon;
+	private JPanel panel_1;
 	
 	public AbstractURIChooserPanel(Service service) {
 		this.service = service;
 		this.initedAccountId = null;
+		this.linked = false;
 		setIconPack(IconPack.DEFAULT);
 		this.filesModel = new FilesTableModel();
 		setLayout(new BorderLayout(0, 0));
@@ -123,6 +129,11 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		this.getNewButton().setIcon(this.icons.getNewAccount());
 		this.getDeleteButton().setIcon(this.icons.getDeleteAccount());
 		this.getRefreshButton().setIcon(this.icons.getSynchronize());
+		setStatusIcon();
+	}
+
+	private void setStatusIcon() {
+		this.getStatusIcon().setIcon(this.linked?icons.getLinked():icons.getNotLinked());
 	}
 
 	public void refresh(boolean force) {
@@ -148,41 +159,56 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		String accountId = account==null?null:account.getId();
 		if (force || hasPendingSelected || (!NullUtils.areEquals(initedAccountId, accountId))) {
 			initedAccountId = accountId;
-			RemoteFileListWorker worker = new RemoteFileListWorker(account);
-			worker.setPhase(getRemoteConnectingWording(), -1); //$NON-NLS-1$
-			final Window owner = Utils.getOwnerWindow(this);
-			WorkInProgressFrame frame = new WorkInProgressFrame(owner, MessagePack.getString("com.fathzer.soft.jclop.GenericWait.title", getLocale()), ModalityType.APPLICATION_MODAL, worker); //$NON-NLS-1$
-			frame.setSize(300, frame.getSize().height);
-			Utils.centerWindow(frame, owner);
-			frame.setVisible(true); //$NON-NLS-1$
-			try {
-				Collection<Entry> entries = worker.get();
-				// Update the file list
-				filesModel.clear();
-				for (Entry entry : entries) {
-					Entry filtered = filter(entry);
-					if (filtered!=null) filesModel.add(entry);
-				}
-				// Re-select the previously selected one (changing the model erases the selection)
-				selectByFileName();
-				// Display quota data
-				setQuota(account);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			} catch (ExecutionException e) {
-				//FIXME
-	//			if (e.getCause() instanceof DropboxIOException) {
-	//				JOptionPane.showMessageDialog(owner, LocalizationData.get("dropbox.Chooser.error.connectionFailed"), LocalizationData.get("Generic.warning"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
-	//			} else if (e.getCause() instanceof DropboxUnlinkedException) {
-	//				System.err.println ("Not linked !!!");
-	//				throw new RuntimeException(e);
-	//			} else {
+			this.linked = false;
+			Collection<Entry> entries = new TreeSet<Entry>();
+			if (account!=null) {
+				entries.addAll(account.getLocalEntries());
+				try {
+					RemoteFileListWorker worker = new RemoteFileListWorker(account);
+					worker.setPhase(getRemoteConnectingWording(), -1); //$NON-NLS-1$
+					final Window owner = Utils.getOwnerWindow(this);
+					WorkInProgressFrame frame = new WorkInProgressFrame(owner, MessagePack.getString("com.fathzer.soft.jclop.GenericWait.title", getLocale()), ModalityType.APPLICATION_MODAL, worker); //$NON-NLS-1$
+					frame.setSize(300, frame.getSize().height);
+					Utils.centerWindow(frame, owner);
+					frame.setVisible(true); //$NON-NLS-1$
+					entries.addAll(worker.get());
+					this.linked = true;
+					// Display quota data
+					setQuota(account);
+				} catch (InterruptedException e) {
 					throw new RuntimeException(e);
-	//			}
-			} catch (CancellationException e) {
-				// The task was cancelled
-				setQuota(null);
+				} catch (ExecutionException e) {
+					if (e.getCause() instanceof UnreachableHostException) {
+						getProgressBar().setValue(0);
+						getProgressBar().setString(MessagePack.getString("com.fathzer.soft.jclop.Chooser.error.connectionFailed", getLocale()));
+					} else {
+					//FIXME
+		//			if (e.getCause() instanceof DropboxIOException) {
+		//				JOptionPane.showMessageDialog(owner, LocalizationData.get("dropbox.Chooser.error.connectionFailed"), LocalizationData.get("Generic.warning"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+		//			} else if (e.getCause() instanceof DropboxUnlinkedException) {
+		//				System.err.println ("Not linked !!!");
+		//				throw new RuntimeException(e);
+		//			} else {
+						throw new RuntimeException(e);
+		//			}
+					}
+				} catch (CancellationException e) {
+					// The task was cancelled
+					setQuota(null);
+				}
 			}
+			getStatusIcon().setVisible(account!=null);
+			getProgressBar().setVisible(account!=null);
+			// Update the file list
+			filesModel.clear();
+			for (Entry entry : entries) {
+				Entry filtered = filter(entry);
+				if (filtered!=null) filesModel.add(entry);
+			}
+			// Re-select the previously selected one (changing the model erases the selection)
+			selectByFileName();
+			// Set the sattus icon
+			setStatusIcon();
 		}
 		
 		if (hasPendingSelected) {
@@ -214,9 +240,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				}
 			}
 			getProgressBar().setString(MessageFormat.format(MessagePack.getString("com.fathzer.soft.jclop.Chooser.freeSpace", getLocale()), new DecimalFormat("0.0").format(remaining), unit)); //$NON-NLS-1$ //$NON-NLS-2$
-			getProgressBar().setVisible(true);
 		} else {
-			getProgressBar().setVisible(false);
+			getProgressBar().setValue(0);
+			getProgressBar().setString("?");
 		}
 	}
 	
@@ -313,13 +339,12 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			gbc_refreshButton.gridx = 1;
 			gbc_refreshButton.gridy = 0;
 			northPanel.add(getRefreshButton(), gbc_refreshButton);
-			GridBagConstraints gbc_progressBar = new GridBagConstraints();
-			gbc_progressBar.fill = GridBagConstraints.HORIZONTAL;
-			gbc_progressBar.insets = new Insets(5, 0, 5, 0);
-			gbc_progressBar.gridwidth = 0;
-			gbc_progressBar.gridx = 0;
-			gbc_progressBar.gridy = 1;
-			northPanel.add(getProgressBar(), gbc_progressBar);
+			GridBagConstraints gbc_panel_1 = new GridBagConstraints();
+			gbc_panel_1.fill = GridBagConstraints.BOTH;
+			gbc_panel_1.gridwidth = 2;
+			gbc_panel_1.gridx = 0;
+			gbc_panel_1.gridy = 1;
+			northPanel.add(getPanel_1(), gbc_panel_1);
 		}
 		return northPanel;
 	}
@@ -340,7 +365,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		if (progressBar == null) {
 			progressBar = new JProgressBar();
 			progressBar.setStringPainted(true);
-			progressBar.setVisible(false);
+			progressBar.setString("?");
 		}
 		return progressBar;
 	}
@@ -382,7 +407,6 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			panel.setLayout(gbl_panel);
 			GridBagConstraints gbc_lblAccount = new GridBagConstraints();
 			gbc_lblAccount.fill = GridBagConstraints.BOTH;
-			gbc_lblAccount.insets = new Insets(0, 0, 0, 5);
 			gbc_lblAccount.anchor = GridBagConstraints.EAST;
 			gbc_lblAccount.gridx = 0;
 			gbc_lblAccount.gridy = 0;
@@ -398,7 +422,6 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			gbc_btnNewAccount.gridy = 0;
 			panel.add(getNewButton(), gbc_btnNewAccount);
 			GridBagConstraints gbc_deleteButton = new GridBagConstraints();
-			gbc_deleteButton.insets = new Insets(0, 0, 0, 5);
 			gbc_deleteButton.gridx = 3;
 			gbc_deleteButton.gridy = 0;
 			panel.add(getDeleteButton(), gbc_deleteButton);
@@ -565,5 +588,20 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 
 	public static void showError(Window owner, String message, Locale locale) {
 		JOptionPane.showMessageDialog(owner, message, MessagePack.getString("com.fathzer.soft.jclop.Error.title", locale), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+	}
+	private JLabel getStatusIcon() {
+		if (statusIcon == null) {
+			statusIcon = new JLabel();
+		}
+		return statusIcon;
+	}
+	private JPanel getPanel_1() {
+		if (panel_1 == null) {
+			panel_1 = new JPanel();
+			panel_1.setLayout(new BorderLayout(0, 0));
+			panel_1.add(getStatusIcon(), BorderLayout.WEST);
+			panel_1.add(getProgressBar());
+		}
+		return panel_1;
 	}
 }

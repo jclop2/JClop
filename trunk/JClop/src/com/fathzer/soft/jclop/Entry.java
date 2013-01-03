@@ -54,5 +54,4 @@ public class Entry implements Comparable<Entry> {
 	public String toString() {
 		return account.getId()+"/"+displayName;
 	}
-
 }
