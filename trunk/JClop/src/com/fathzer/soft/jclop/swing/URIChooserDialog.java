@@ -8,7 +8,6 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URI;
-import java.util.Locale;
 
 import javax.swing.JPanel;
 
@@ -78,7 +77,7 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 
 	@Override
 	protected String getOkDisabledCause() {
-		if (getSelectedURI()==null) return MessagePack.getString("com.fathzer.soft.jclop.URIChooserDialog.noFileSelected", getLocale()); //$NON-NLS-1$
+		if (getSelectedURI()==null) return MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.noFileSelected", getLocale()); //$NON-NLS-1$
 		return null;
 	}
 
@@ -103,7 +102,7 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	 */
 	public void setSaveDialog(boolean save) {
 		if (save!=saveDialog) {
-			getOkButton().setText(save?MessagePack.getString("com.fathzer.soft.jclop.URIChooserDialog.saveButton.title", getLocale()):MessagePack.getString("com.fathzer.soft.jclop.URIChooserDialog.openButton.title", getLocale())); //$NON-NLS-1$ //$NON-NLS-2$
+			getOkButton().setText(save?MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.saveButton.title", getLocale()):MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.openButton.title", getLocale())); //$NON-NLS-1$ //$NON-NLS-2$
 			for (URIChooser panel : data) {
 				panel.setSaveType(save);
 			}
@@ -139,14 +138,4 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 			multiplePanel.setSelectedComponent((Component) panel);
 		}
 	}
-	
-//	public void setLocale(Locale locale) {
-//		super.setLocale(locale);
-//		if (data!=null) {
-//			System.out.println (getLocale());
-//			for (URIChooser chooser : data) {
-//				chooser.setLocale(locale);
-//			}
-//		}
-//	}
 }

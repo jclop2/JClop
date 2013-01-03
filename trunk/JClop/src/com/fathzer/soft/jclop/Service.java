@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 
+import com.fathzer.soft.jclop.swing.MessagePack;
+
 import net.astesana.ajlib.utilities.StringUtils;
 
 /** This class represents a cloud service, with accounts synchronized with a local cache.
@@ -232,4 +234,8 @@ public abstract class Service {
 	 * @throws IOException 
 	 */
 	public abstract boolean upload(InputStream in, long length, Entry entry, Cancellable task, Locale locale) throws IOException;
+	
+	public String getMessage(String key, Locale locale) {
+		return MessagePack.DEFAULT.getString(key, locale);
+	}
 }
