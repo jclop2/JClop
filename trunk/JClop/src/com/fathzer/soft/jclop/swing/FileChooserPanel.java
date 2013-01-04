@@ -1,6 +1,8 @@
 package com.fathzer.soft.jclop.swing;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -61,18 +63,16 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 
 	private JFileChooser getFileChooser() {
 		if (fileChooser == null) {
-			fileChooser = new FileChooser() {
-				public void approveSelection() {
-					doApproveSelection();
-				}
-			};
+			fileChooser = new FileChooser();
 			fileChooser.setControlButtonsAreShown(false);
+			fileChooser.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand())) firePropertyChange(URI_APPROVED_PROPERTY, false, true);
+				}
+			});
 		}
 		return fileChooser;
-	}
-	
-	private void doApproveSelection() {
-		firePropertyChange(URI_APPROVED_PROPERTY, false, true);
 	}
 
 	@Override
