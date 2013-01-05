@@ -80,4 +80,14 @@ public interface URIChooser {
 	 * @return true if the selected URI exists, false if not or if no URI is selected
 	 */
 	public boolean isSelectedExist();
+
+	/** Gets the reason why the currently selected URI is invalid.
+	 * <br>The chooser may have selected URI that are invalid.
+	 * <br>For example, the FileChooserURI, inherited from the java JFileChooser is able to select non existing
+	 * file in "open" mode. It also allows to select read or write protected files.
+	 * <br>The FileChooserPanel implements this method in order to refuse such URI. 
+	 * @return a String or null is the current selected URI is valid.
+	 * @see FileChooserPanel
+	 */
+	public String getDisabledCause();
 }

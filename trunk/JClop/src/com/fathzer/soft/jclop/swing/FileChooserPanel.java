@@ -61,7 +61,7 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 		return new ImageIcon(getClass().getResource("computer.png")); //$NON-NLS-1$
 	}
 
-	private JFileChooser getFileChooser() {
+	private FileChooser getFileChooser() {
 		if (fileChooser == null) {
 			fileChooser = new FileChooser();
 			fileChooser.setControlButtonsAreShown(false);
@@ -115,5 +115,10 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	@Override
 	public boolean isSelectedExist() {
 		return getFileChooser().getSelectedFile().exists();
+	}
+
+	@Override
+	public String getDisabledCause() {
+		return getFileChooser().getDisabledCause();
 	}
 }

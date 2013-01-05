@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 
 import net.astesana.ajlib.swing.dialog.AbstractDialog;
 import net.astesana.ajlib.swing.dialog.FileChooser;
-import net.astesana.ajlib.swing.framework.Application;
 
 @SuppressWarnings("serial")
 public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
@@ -79,10 +78,7 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	@Override
 	protected String getOkDisabledCause() {
 		if (getSelectedURI()==null) return MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.noFileSelected", getLocale()); //$NON-NLS-1$
-		if (!this.saveDialog && !getSelectedPanel().isSelectedExist()) {
-				return Application.getString("openDialog.fileDoesntExist", getLocale()); 
-		}
-		return null;
+		return getSelectedPanel().getDisabledCause();
 	}
 
 	/* (non-Javadoc)
