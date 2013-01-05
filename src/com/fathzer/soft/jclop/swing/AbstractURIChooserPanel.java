@@ -491,7 +491,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					boolean confirm = JOptionPane.showOptionDialog(Utils.getOwnerWindow(deleteButton), service.getMessage(MessagePack.DELETE_MESSAGE, getLocale()), MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.Chooser.delete.message.title", getLocale()), //$NON-NLS-1$ //$NON-NLS-2$
-							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{service.getMessage(MessagePack.DELETE, getLocale()),Application.getString("GenericButton.cancel")},1)==0; //$NON-NLS-1$ //$NON-NLS-2$
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{service.getMessage(MessagePack.DELETE, getLocale()),Application.getString("GenericButton.cancel", getLocale())},1)==0; //$NON-NLS-1$ //$NON-NLS-2$
 					if (confirm) {
 						Account account = (Account) getAccountsCombo().getSelectedItem();
 						getAccountsCombo().removeItemAt(getAccountsCombo().getSelectedIndex());
@@ -549,6 +549,11 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	public boolean isSelectedExist() {
 		// If the selectedFile exists, it is selected in the file list as there's a listener on the file name field
 		return getFileList().getSelectedRow()>=0;
+	}
+	
+	@Override
+	public String getDisabledCause() {
+		return null;
 	}
 	
 	private void serialize(Account account) {
