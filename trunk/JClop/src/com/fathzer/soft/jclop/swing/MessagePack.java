@@ -13,6 +13,7 @@ public class MessagePack {
 	public static final String REFRESH_TOOLTIP = "com.fathzer.soft.jclop.Chooser.refresh.tooltip";
 	public static final String CONNECTING = "com.fathzer.soft.jclop.connecting";
 	public static final String CONNECTION_ERROR = "com.fathzer.soft.jclop.connectionFailed";
+	public static final String COMMUNICATION_ERROR = "com.fathzer.soft.jclop.communication.unexpectedError";
 	public static final String UPLOADING = "com.fathzer.soft.jclop.uploading";
 	public static final String DOWNLOADING = "com.fathzer.soft.jclop.downloading";
 }

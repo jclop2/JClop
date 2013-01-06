@@ -163,10 +163,10 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			Collection<Entry> entries = new TreeSet<Entry>();
 			if (account!=null) {
 				entries.addAll(account.getLocalEntries());
+				final Window owner = Utils.getOwnerWindow(this);
 				try {
 					RemoteFileListWorker worker = new RemoteFileListWorker(account);
-					worker.setPhase(service.getMessage(MessagePack.CONNECTING, getLocale()), -1); //$NON-NLS-1$
-					final Window owner = Utils.getOwnerWindow(this);
+					worker.setPhase(service.getMessage(MessagePack.CONNECTING, getLocale()), -1);
 					WorkInProgressFrame frame = new WorkInProgressFrame(owner, MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.GenericWait.title", getLocale()), ModalityType.APPLICATION_MODAL, worker); //$NON-NLS-1$
 					frame.setSize(300, frame.getSize().height);
 					Utils.centerWindow(frame, owner);
@@ -182,6 +182,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 						getProgressBar().setValue(0);
 						getProgressBar().setString(service.getMessage(MessagePack.CONNECTION_ERROR, getLocale()));
 					} else {
+//						JOptionPane.showMessageDialog(owner, LocalizationData.get("dropbox.Chooser.error.connectionFailed"), LocalizationData.get("Generic.warning"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+						setQuota(null);
+						showError(owner, MessagePack.COMMUNICATION_ERROR, getLocale());
 					//FIXME
 		//			if (e.getCause() instanceof DropboxIOException) {
 		//				JOptionPane.showMessageDialog(owner, LocalizationData.get("dropbox.Chooser.error.connectionFailed"), LocalizationData.get("Generic.warning"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
@@ -189,7 +192,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		//				System.err.println ("Not linked !!!");
 		//				throw new RuntimeException(e);
 		//			} else {
-						throw new RuntimeException(e);
+		//				throw new RuntimeException(e);
 		//			}
 					}
 				} catch (CancellationException e) {
@@ -302,11 +305,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				public void propertyChange(PropertyChangeEvent evt) {
 					int pos = fileNameField.getCaretPosition();
 					selectByFileName();
-					URI old = selectedURI;
-					String name = getFileNameField().getText();
-					Account account = (Account) getAccountsCombo().getSelectedItem();
-					selectedURI = ((account==null) || (name.length()==0))?null:getService().getURI(new Entry(account, name));
-					firePropertyChange(SELECTED_URI_PROPERTY, old, getSelectedURI());
+					updateSelectedURI();
 					pos = Math.min(pos, fileNameField.getText().length());
 					fileNameField.setCaretPosition(pos);
 				}
@@ -445,8 +444,14 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			accountsCombo.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					doAccountSelectionChanged();
-					refresh(accountsCombo.getSelectedItem()==null);
+					boolean oneIsSelected = doAccountSelectionChanged();
+					refresh(oneIsSelected);
+					String name = getFileNameField().getText();
+					if ((name.length()>0) && (!oneIsSelected || (!isSaveType() && (selectByFileName()<0)))) {
+						getFileNameField().setText(""); // Erases the current selection
+					} else {
+						updateSelectedURI();
+					}
 				}
 			});
 		}
@@ -496,7 +501,6 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 						Account account = (Account) getAccountsCombo().getSelectedItem();
 						getAccountsCombo().removeItemAt(getAccountsCombo().getSelectedIndex());
 						account.delete();
-						getFileNameField().setText(""); // Erases the current selection
 						getFileNameField().setEditable(getAccountsCombo().getItemCount()>0);
 					}
 				}
@@ -564,7 +568,10 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		}
 	}
 
-	private void selectByFileName() {
+	/** Gets the index of the file which name is in the file name field and select/deselect in in the file list.
+	 * @return an integer >= 0 if the fileName is in the file list
+	 */
+	private int selectByFileName() {
 		int index = -1;
 		for (int rowIndex=0;rowIndex<filesModel.getRowCount();rowIndex++) {
 			if (filesModel.getValueAt(rowIndex, 0).equals(fileNameField.getText())) {
@@ -578,13 +585,18 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		} else {
 			selectionModel.setSelectionInterval(index, index);
 		}
+		return index;
 	}
 
-	private void doAccountSelectionChanged() {
+	/** Adjusts button appearance according to the selected account.
+	 * @return true if an account is selected 
+	 */
+	private boolean doAccountSelectionChanged() {
 		boolean oneIsSelected = getAccountsCombo().getSelectedIndex()>=0;
 		getDeleteButton().setEnabled(oneIsSelected);
 		getRefreshButton().setEnabled(oneIsSelected);
 		getFileNameField().setEditable(oneIsSelected);
+		return oneIsSelected;
 	}
 
 	public static void showError(Window owner, String message, Locale locale) {
@@ -604,5 +616,16 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			panel_1.add(getProgressBar());
 		}
 		return panel_1;
+	}
+
+	/** Updates the selected URI accordingly to the panel's content.
+	 * <br>Fire the appropriate property change event if the uri has changed.
+	 */
+	private void updateSelectedURI() {
+		URI old = selectedURI;
+		String name = getFileNameField().getText();
+		Account account = (Account) getAccountsCombo().getSelectedItem();
+		selectedURI = ((account==null) || (name.length()==0))?null:getService().getURI(new Entry(account, name));
+		if (!NullUtils.areEquals(selectedURI, old)) firePropertyChange(SELECTED_URI_PROPERTY, old, getSelectedURI());
 	}
 }
