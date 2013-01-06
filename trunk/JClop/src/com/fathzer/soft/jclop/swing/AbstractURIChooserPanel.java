@@ -51,6 +51,7 @@ import javax.swing.JScrollPane;
 
 import com.fathzer.soft.jclop.Account;
 import com.fathzer.soft.jclop.Entry;
+import com.fathzer.soft.jclop.InvalidConnectionDataException;
 import com.fathzer.soft.jclop.Service;
 import com.fathzer.soft.jclop.UnreachableHostException;
 
@@ -164,6 +165,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			if (account!=null) {
 				entries.addAll(account.getLocalEntries());
 				final Window owner = Utils.getOwnerWindow(this);
+				boolean eraseQuota = true;
 				try {
 					RemoteFileListWorker worker = new RemoteFileListWorker(account);
 					worker.setPhase(service.getMessage(MessagePack.CONNECTING, getLocale()), -1);
@@ -175,30 +177,24 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 					this.linked = true;
 					// Display quota data
 					setQuota(account);
+					eraseQuota = false;
 				} catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				} catch (ExecutionException e) {
 					if (e.getCause() instanceof UnreachableHostException) {
 						getProgressBar().setValue(0);
 						getProgressBar().setString(service.getMessage(MessagePack.CONNECTION_ERROR, getLocale()));
+						eraseQuota = false;
+					} else if (e.getCause() instanceof InvalidConnectionDataException) {
+						System.out.println ("Should do something, connetion data is invalid"); //FIXME
+//						showError(owner, MessagePack.COMMUNICATION_ERROR, getLocale());
 					} else {
-//						JOptionPane.showMessageDialog(owner, LocalizationData.get("dropbox.Chooser.error.connectionFailed"), LocalizationData.get("Generic.warning"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
-						setQuota(null);
 						showError(owner, MessagePack.COMMUNICATION_ERROR, getLocale());
-					//FIXME
-		//			if (e.getCause() instanceof DropboxIOException) {
-		//				JOptionPane.showMessageDialog(owner, LocalizationData.get("dropbox.Chooser.error.connectionFailed"), LocalizationData.get("Generic.warning"), JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
-		//			} else if (e.getCause() instanceof DropboxUnlinkedException) {
-		//				System.err.println ("Not linked !!!");
-		//				throw new RuntimeException(e);
-		//			} else {
-		//				throw new RuntimeException(e);
-		//			}
 					}
 				} catch (CancellationException e) {
 					// The task was cancelled
-					setQuota(null);
 				}
+				if (eraseQuota) setQuota(null);
 			}
 			getStatusIcon().setVisible(account!=null);
 			getProgressBar().setVisible(account!=null);
