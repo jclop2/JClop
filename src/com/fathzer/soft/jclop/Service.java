@@ -210,7 +210,7 @@ public abstract class Service {
 		}
 	}
 	
-	public abstract Collection<Entry> getRemoteEntries(Account account, Cancellable task) throws UnreachableHostException;
+	public abstract Collection<Entry> getRemoteEntries(Account account, Cancellable task) throws UnreachableHostException, InvalidConnectionDataException;
 	public abstract String getConnectionDataURIFragment(Serializable connectionData);
 	public abstract Serializable getConnectionData(String uriFragment);
 	
