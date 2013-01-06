@@ -7,6 +7,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
+import java.util.Locale;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -14,6 +15,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
 import net.astesana.ajlib.swing.dialog.FileChooser;
+import net.astesana.ajlib.utilities.NullUtils;
 
 /** An AbstractURIChooserPanel that allows the user to select a file.
  * @author Jean-Marc Astesana
@@ -32,6 +34,7 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 		getFileChooser().addPropertyChangeListener(FileChooser.SELECTED_FILE_CHANGED_PROPERTY, new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
+//System.out.println ("FileChooser selection changed from "+evt.getOldValue()+" to "+evt.getNewValue());
 				File oldFile = (File) evt.getOldValue();
 				URI oldURI = oldFile==null?null:oldFile.toURI();
 				File newFile = (File) evt.getNewValue();
@@ -41,7 +44,7 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 				} else {
 					newURI = newFile.toURI();
 				}
-				firePropertyChange(SELECTED_URI_PROPERTY, oldURI, newURI);
+				if (!NullUtils.areEquals(oldURI, newURI)) firePropertyChange(SELECTED_URI_PROPERTY, oldURI, newURI);
 			}
 		});
 	}
@@ -64,6 +67,7 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	private FileChooser getFileChooser() {
 		if (fileChooser == null) {
 			fileChooser = new FileChooser();
+			fileChooser.setSelectionTestEnabled(false);
 			fileChooser.setControlButtonsAreShown(false);
 			fileChooser.addActionListener(new ActionListener() {
 				@Override
@@ -92,7 +96,7 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	@Override
 	public void setSelectedURI(URI uri) {
 		if (uri==null) {
-			if (fileChooser.getSelectedFile()!=null) fileChooser.setSelectedFile(null);
+			if (fileChooser.getSelectedFile()!=null) fileChooser.setSelectedFiles(null);
 		} else {
 			File file = new File(uri);
 			if (getFileChooser().getDialogType()==JFileChooser.OPEN_DIALOG) {
@@ -120,5 +124,14 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	@Override
 	public String getDisabledCause() {
 		return getFileChooser().getDisabledCause();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.awt.Component#setLocale(java.util.Locale)
+	 */
+	@Override
+	public void setLocale(Locale locale) {
+		getFileChooser().setLocale(locale);
+		super.setLocale(locale);
 	}
 }

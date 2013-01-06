@@ -17,8 +17,11 @@ public interface URIChooser {
 	 */
 	public static final String SELECTED_URI_PROPERTY = "selectedUri"; //$NON-NLS-1$
 	/** The name of the approved uri property.
-	 * <br>This component could fire a property change event when the selected uri is approved by the user
+	 * <br>This component should fire a property change event when the selected uri is approved by the user
 	 * (For example, if the user has double clicked an URI). This will cause the dialog to be validated.
+	 * <br>Some may wonder why not using the same ActionEvent way as in JFileChooser. The reason is sending
+	 * a property change event is far more easy to implement because it is supported directly by JPanel.
+	 * fireAction is quite hard to code.
 	 */
 	public static final String URI_APPROVED_PROPERTY = "uriApproved"; //$NON-NLS-1$
 	

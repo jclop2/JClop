@@ -8,11 +8,14 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URI;
+import java.util.Locale;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import net.astesana.ajlib.swing.dialog.AbstractDialog;
 import net.astesana.ajlib.swing.dialog.FileChooser;
+import net.astesana.ajlib.swing.framework.Application;
 
 @SuppressWarnings("serial")
 public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
@@ -77,7 +80,9 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 
 	@Override
 	protected String getOkDisabledCause() {
-		if (getSelectedURI()==null) return MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.noFileSelected", getLocale()); //$NON-NLS-1$
+		if (getSelectedURI()==null) {
+			return MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.noFileSelected", getLocale()); //$NON-NLS-1$
+		}
 		return getSelectedPanel().getDisabledCause();
 	}
 
@@ -89,6 +94,11 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 		URI selectedURI = getSelectedURI();
 		boolean exists = selectedURI!=null && this.saveDialog && getSelectedPanel().isSelectedExist();
 		if (exists && FileChooser.showSaveDisplayQuestion(this)) return;
+		String error = getSelectedPanel().getDisabledCause();
+		if (error!=null) {
+			JOptionPane.showMessageDialog(this, error, Application.getString("Generic.error", getLocale()), JOptionPane.ERROR_MESSAGE);  //$NON-NLS-1$
+			return;
+		}
 		super.confirm();
 	}
 	
@@ -102,6 +112,7 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	 */
 	public void setSaveDialog(boolean save) {
 		if (save!=saveDialog) {
+			this.saveDialog = save;
 			getOkButton().setText(save?MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.saveButton.title", getLocale()):MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.openButton.title", getLocale())); //$NON-NLS-1$ //$NON-NLS-2$
 			for (URIChooser panel : data) {
 				panel.setSaveType(save);
@@ -137,5 +148,19 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 		if ((multiplePanel!=null) && (uri!=null)) {
 			multiplePanel.setSelectedComponent((Component) panel);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see java.awt.Component#setLocale(java.util.Locale)
+	 */
+	@Override
+	public void setLocale(Locale locale) {
+		super.setLocale(locale);
+		if (data!=null) {
+			for (URIChooser chooser : data) {
+				((Component)chooser).setLocale(locale);
+			}
+		}
+		//FIXME The wording of buttons should be updated
 	}
 }
