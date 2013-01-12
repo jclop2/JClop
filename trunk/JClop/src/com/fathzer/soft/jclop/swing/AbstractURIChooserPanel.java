@@ -171,7 +171,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 					worker.setPhase(service.getMessage(MessagePack.CONNECTING, getLocale()), -1);
 					WorkInProgressFrame frame = new WorkInProgressFrame(owner, MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.GenericWait.title", getLocale()), ModalityType.APPLICATION_MODAL, worker); //$NON-NLS-1$
 					frame.setSize(300, frame.getSize().height);
-					Utils.centerWindow(frame, owner);
+					frame.setLocationRelativeTo(owner);
 					frame.setVisible(true); //$NON-NLS-1$
 					entries.addAll(worker.get());
 					this.linked = true;
