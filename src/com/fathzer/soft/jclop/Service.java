@@ -98,13 +98,26 @@ public abstract class Service {
 
 	/** Get the entry corresponding to a local cache file.
 	 * @param account The account where the path is located.
-	 * @param localPath The path of the local cache file, related to the account 
+	 * @param file The local cache file (actually it's the cache folder related to a remote file) 
 	 * @return an entry or null if the entry is not a valid cache file.
 	 */
-	final Entry getLocalEntry(Account account, String localPath) {
+	final Entry getLocalEntry(Account account, File file) {
 		try {
-			if (!localPath.startsWith(FILE_PREFIX)) return null;
-			return new Entry(account, URLDecoder.decode(localPath.substring(FILE_PREFIX.length()), UTF_8));
+			// If the file is not starting with the file prefix, ignore it.
+			if (!file.getName().startsWith(FILE_PREFIX)) return null;
+			String[] files = file.list();
+			boolean ok = false;
+			if (files!=null) {
+				for (String fileName : files) {
+					if (isValidFile(fileName)) {
+						ok = true;
+						break;
+					}
+				}
+			}
+			// If the folder contains no valid file, try to repair the cache folder (delete the file)
+			//if (!ok) file.delete(); // Not sure it was a good idea
+			return ok?new Entry(account, URLDecoder.decode(file.getName().substring(FILE_PREFIX.length()), UTF_8)) : null;
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
@@ -165,10 +178,15 @@ public abstract class Service {
 	 */
 	public final File getLocalFileForWriting(URI uri) {
 		File file = getLocalFile(uri);
+		File parentFile = file.getParentFile();
 		if (file.getName().startsWith(SYNCHRONIZED_CACHE_PREFIX)) {
 			String name = file.getName().substring(SYNCHRONIZED_CACHE_PREFIX.length());
-			file = new File(file.getParent(), CACHE_PREFIX+name);
+			file = new File(parentFile, CACHE_PREFIX+name);
 		}
+		//Be aware that there could be some corrupted data in the cache folder.
+		//We will try to repair it (example: the parent folder should be a file, not a folder !)
+		if (parentFile.isFile()) parentFile.delete();
+		if (!parentFile.exists()) parentFile.mkdirs();
 		return file;
 	}
 	
@@ -336,37 +354,45 @@ public abstract class Service {
 	 */
 	public abstract Serializable getConnectionData(String uriFragment);
 	
-	/** Gets the remote revision of an entry.
+	/** Gets the remote revision of an URI.
 	 * <br>The remote revision is unique id that identifies the revision of a file.
 	 * <br>There's no order relation between revisions.
-	 * @param entry
+	 * @param uri The uri
 	 * @return a String or null if the entry does not exist remotely
 	 * @throws IOException 
 	 */
-	public abstract String getRemoteRevision(Entry entry) throws IOException;
+	public abstract String getRemoteRevision(URI uri) throws IOException;
 
-	/** Downloads the uri to a file.
-	 * @param entry The entry to download.
+	/** Downloads an uri to a file.
+	 * @param uri The entry to download.
 	 * @param out The stream where to download
 	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the download if the task is cancelled.
 	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
 	 * @return true if the upload is done, false if it was cancelled
 	 * @throws IOException 
 	 */
-	public abstract boolean download(Entry entry, OutputStream out, Cancellable task, Locale locale) throws IOException;
+	public abstract boolean download(URI uri, OutputStream out, Cancellable task, Locale locale) throws IOException;
 
 	/** Uploads a file to a destination uri.
 	 * @param in The inputStream from which to read to uploaded bytes
 	 * @param length The number of bytes to upload
-	 * @param entry The entry where to upload.
+	 * @param uri The URI where to upload.
 	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the upload if the task is cancelled.
  	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
 	 * @return true if the upload is done, false if it was cancelled
 	 * @throws IOException 
 	 */
-	public abstract boolean upload(InputStream in, long length, Entry entry, Cancellable task, Locale locale) throws IOException;
+	public abstract boolean upload(InputStream in, long length, URI uri, Cancellable task, Locale locale) throws IOException;
 	
 	public String getMessage(String key, Locale locale) {
 		return MessagePack.DEFAULT.getString(key, locale);
+	}
+
+	/** Deletes the local cache of an uri.
+	 * <br>If the local cache doesn't exists, does nothing.
+	 * @param uri
+	 */
+	public void deleteLocal(URI uri) {
+		Account.delete(getLocalFile(uri).getParentFile());
 	}
 }

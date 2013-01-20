@@ -1,6 +1,6 @@
 package com.fathzer.soft.jclop;
 
-public class Entry implements Comparable<Entry> {
+public final class Entry implements Comparable<Entry> {
 	private String displayName;
 	private Account account;
 	

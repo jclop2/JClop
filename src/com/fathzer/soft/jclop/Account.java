@@ -18,7 +18,7 @@ import com.fathzer.soft.jclop.Service;
 /** An account in the Cloud, cached in a local folder.
  * @see Service
  */
-public class Account {
+public final class Account {
 	private static final String INFO_FILENAME = ".info";
 
 	private File root;
@@ -144,7 +144,7 @@ public class Account {
 		delete (this.root);
 	}
 	
-	private static void delete(File file) {
+	static void delete(File file) {
 		if (file.isDirectory()) {
 			File[] files = file.listFiles();
 			for (File child : files) {
@@ -160,7 +160,7 @@ public class Account {
 		if (files!=null) {
 			for (File file : files) {
 				if (file.isDirectory()) {
-					Entry entry = service.getLocalEntry(this, file.getName());
+					Entry entry = service.getLocalEntry(this, file);
 					if (entry!=null) result.add(entry);
 				}
 			}
