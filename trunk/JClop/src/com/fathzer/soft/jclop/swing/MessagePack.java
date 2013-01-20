@@ -16,4 +16,9 @@ public class MessagePack {
 	public static final String COMMUNICATION_ERROR = "com.fathzer.soft.jclop.communication.unexpectedError";
 	public static final String UPLOADING = "com.fathzer.soft.jclop.uploading";
 	public static final String DOWNLOADING = "com.fathzer.soft.jclop.downloading";
+
+	public static final String CONFLICT_MESSAGE = "com.fathzer.soft.jclop.conflict";
+	public static final String REMOTE_MISSING_MESSAGE = "com.fathzer.soft.jclop.remoteMissing";
+	public static final String DOWNLOAD_ACTION = "com.fathzer.soft.jclop.download";
+	public static final String UPLOAD_ACTION = "com.fathzer.soft.jclop.upload";
 }
