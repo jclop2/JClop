@@ -146,6 +146,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				Entry entry = pendingSelectedEntry;
 				boolean old = getAccountsCombo().isActionEnabled(); 
 				getAccountsCombo().setActionEnabled(false);
+System.out.println("Refresh in hasPendingSelected, selection = "+getAccountsCombo().getSelectedIndex()); //TODO
 				if (!getAccountsCombo().contains(entry.getAccount())) {
 					getAccountsCombo().addItem(entry.getAccount());
 					isNewAccount = true;
@@ -437,6 +438,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			for (Account account : accounts) {
 				accountsCombo.addItem(account);
 			}
+
 			accountsCombo.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -450,6 +452,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 					}
 				}
 			});
+			doAccountSelectionChanged();
 		}
 		return accountsCombo;
 	}
@@ -484,7 +487,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JButton getDeleteButton() {
 		if (deleteButton == null) {
 			deleteButton = new JButton();
-			deleteButton.setEnabled(getAccountsCombo().getItemCount()!=0);
+			deleteButton.setEnabled(false);
 			deleteButton.setToolTipText(service.getMessage(MessagePack.DELETE_TOOLTIP, getLocale())); //$NON-NLS-1$
 			int height = getAccountsCombo().getPreferredSize().height;
 			deleteButton.setPreferredSize(new Dimension(height, height));
