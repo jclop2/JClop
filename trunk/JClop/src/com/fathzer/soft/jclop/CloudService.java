@@ -23,14 +23,14 @@ import net.astesana.ajlib.utilities.StringUtils;
  * @author Jean-Marc Astesana
  * Licence GPL v3
  */
-public abstract class Service {
+public abstract class CloudService {
 	static final String UTF_8 = "UTF-8";
 	static final String ZIP_SUFFIX = ".zip"; //$NON-NLS-1$
 	static final String FILE_PREFIX = "f_";
 	private static final String CACHE_PREFIX = "cache"; //$NON-NLS-1$
 	private static final String SYNCHRONIZED_CACHE_PREFIX = "sync"; //$NON-NLS-1$
 
-	public static final String URI_DOMAIN = "cloud.astesana.net";
+	public static final String URI_DOMAIN = "cloud.jclop.fathzer.com";
 
 	private File root;
 	private Collection<Account> accounts;
@@ -44,7 +44,7 @@ public abstract class Service {
 	 * @throws IllegalArgumentException if it is not possible to create the service folder (or service is a file, not a folder)
 	 * @see #getScheme()  
 	 */
-	protected Service(File root) {
+	protected CloudService(File root) {
 		root = new File(root, getScheme());
 		if (!root.exists()) root.mkdirs();
 		if (!root.isDirectory()) throw new IllegalArgumentException();
@@ -54,7 +54,7 @@ public abstract class Service {
 	
 	/** Gets the scheme of uri managed by this service.
 	 * <br>Files are identified by uri. This method returns the scheme of the uri of files managed by this service.
-	 * The scheme is considered as unique id for services.
+	 * The scheme is considered as a unique id for services.
 	 * @return the service uri scheme
 	 */
 	public abstract String getScheme();
@@ -62,7 +62,7 @@ public abstract class Service {
 	/** Builds an account instance that is cached in a folder passed in argument.
 	 * @param folder The folder where the account is cached
 	 * @return An account, or null if the folder doesn't not contain a valid account.
-	 * @see Account#Account(Service, File)
+	 * @see Account#Account(CloudService, File)
 	 */
 	private Account buildAccount(File folder) {
 		try {
@@ -75,13 +75,14 @@ public abstract class Service {
 	/** Gets the available accounts.
 	 * @return A collection of available accounts
 	 */
-	public Collection<Account> getAccounts() {
+	public final Collection<Account> getAccounts() {
 		return accounts;
 	}
 	
 	/** Forces the account list to be rebuild from the file cache content.
+	 * <br>This method doesn't call the cloud service to get the list of remote accounts
 	 */
-	public void refreshAccounts() {
+	private final void refreshAccounts() {
 		File[] files = root.listFiles();
 		accounts = new ArrayList<Account>();
 		for (File file : files) {
@@ -191,9 +192,9 @@ public abstract class Service {
 	}
 	
 	/** Gets the revision on which the local cache of an URI is based.
-	 * <br>This revision was the remote one last time local and remote copies were successfully synchronized. 
+	 * <br>This revision was the remote one last time local and cloud copies were successfully synchronized. 
 	 * @param uri The URI.
-	 * @return A String that identifies the revision or null if the local cache doesn't exist or was never been synchronized with the remote source.
+	 * @return A String that identifies the revision or null if the local cache doesn't exist or was never been synchronized with the cloud source.
 	 * @throws IOException
 	 */
 	public final String getLocalRevision(URI uri) throws IOException {
@@ -234,7 +235,7 @@ public abstract class Service {
 	 * @return the remote path
 	 * @see #getRemoteEntry(Account, String)
 	 */
-	public final String getRemotePath(Entry entry) {
+	public String getRemotePath(Entry entry) {
 		return '/'+entry.getDisplayName()+ZIP_SUFFIX;
 	}
 
@@ -267,6 +268,7 @@ public abstract class Service {
 
 	/** Gets a string representation of an URI that can safely be displayed on a screen.
 	 * <br>URI may contains secret informations (example: password).
+	 * <br>By default, this method returns the uri without the account id, the connection data and the URI domain.
 	 * @param uri The uri.
 	 * @return a String. Let say entry is the entry corresponding to the uri, this implementation returns the getScheme()://entry.getAccountName()/entry.getDisplayName().
 	 */
@@ -328,7 +330,7 @@ public abstract class Service {
 		}
 	}
 	
-	/** Gets the entries that are stored remotly by the service.
+	/** Gets the entries that are stored remotely by the cloud service.
 	 * @param account The account
 	 * @param task A Cancellable instance that will report the progress or null.
 	 * @return A collection of entries 
@@ -363,9 +365,9 @@ public abstract class Service {
 	 */
 	public abstract String getRemoteRevision(URI uri) throws IOException;
 
-	/** Downloads an uri to a file.
+	/** Downloads data from a cloud uri.
 	 * @param uri The entry to download.
-	 * @param out The stream where to download
+	 * @param out The stream where to download.
 	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the download if the task is cancelled.
 	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
 	 * @return true if the upload is done, false if it was cancelled
@@ -373,7 +375,7 @@ public abstract class Service {
 	 */
 	public abstract boolean download(URI uri, OutputStream out, Cancellable task, Locale locale) throws IOException;
 
-	/** Uploads a file to a destination uri.
+	/** Uploads data to a cloud destination uri.
 	 * @param in The inputStream from which to read to uploaded bytes
 	 * @param length The number of bytes to upload
 	 * @param uri The URI where to upload.
