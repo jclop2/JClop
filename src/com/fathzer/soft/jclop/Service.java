@@ -1,6 +1,9 @@
 package com.fathzer.soft.jclop;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,14 +19,19 @@ import java.util.Locale;
 
 import com.fathzer.soft.jclop.swing.MessagePack;
 
+import net.astesana.ajlib.utilities.NullUtils;
 import net.astesana.ajlib.utilities.StringUtils;
 
-/** A cloud service, with accounts synchronized with a local cache.
+/** A persistence service.
+ * <br>There's two kinds of services :<ul>
+ * <li>Cloud services, with accounts synchronized with a local cache.</li>
+ * <li>Local services, that typically store data onto disk</li>
+ * </ul>
  * <br>Limitation: Account can't contain folder.
  * @author Jean-Marc Astesana
  * Licence GPL v3
  */
-public abstract class CloudService {
+public abstract class Service {
 	static final String UTF_8 = "UTF-8";
 	static final String ZIP_SUFFIX = ".zip"; //$NON-NLS-1$
 	static final String FILE_PREFIX = "f_";
@@ -33,10 +41,12 @@ public abstract class CloudService {
 	public static final String URI_DOMAIN = "cloud.jclop.fathzer.com";
 
 	private File root;
+	private boolean local;
 	private Collection<Account> accounts;
 
 	/** Constructor.
-	 * @param root The root folder of the services (the place where all accounts of all services are cached).<br>
+	 * @param root The root folder of the services (the place where all accounts of all services are cached).
+	 * @param local true if the service is a local one, false if it stores its data in the cloud.
 	 * <br>Each service uses a folder in the root folder, where all the accounts it manages are cached.
 	 * <br>This folder will be named with the service scheme.
 	 * <br>For example, if you root is "/home/user/.MyApp/cache" and getScheme() returns "MyService",
@@ -44,12 +54,19 @@ public abstract class CloudService {
 	 * @throws IllegalArgumentException if it is not possible to create the service folder (or service is a file, not a folder)
 	 * @see #getScheme()  
 	 */
-	protected CloudService(File root) {
-		root = new File(root, getScheme());
-		if (!root.exists()) root.mkdirs();
-		if (!root.isDirectory()) throw new IllegalArgumentException();
-		this.root = root;
-		refreshAccounts();
+	protected Service(File root, boolean local) {
+		this.local = local;
+		if (!local) {
+			root = new File(root, getScheme());
+			if (!root.exists()) root.mkdirs();
+			if (!root.isDirectory()) throw new IllegalArgumentException();
+			this.root = root;
+			refreshAccounts();
+		}
+	}
+	
+	public final boolean isLocal() {
+		return local;
 	}
 	
 	/** Gets the scheme of uri managed by this service.
@@ -62,7 +79,7 @@ public abstract class CloudService {
 	/** Builds an account instance that is cached in a folder passed in argument.
 	 * @param folder The folder where the account is cached
 	 * @return An account, or null if the folder doesn't not contain a valid account.
-	 * @see Account#Account(CloudService, File)
+	 * @see Account#Account(Service, File)
 	 */
 	private Account buildAccount(File folder) {
 		try {
@@ -128,7 +145,7 @@ public abstract class CloudService {
 	 * @param uri an URI
 	 * @return a File
 	 */
-	public final File getLocalFile(URI uri) {
+	public File getLocalFile(URI uri) {
 		// Implementation trick:
 		// We need to store the base revision of the cached file. We will store it using the file name.
 		// This file will be stored in a folder which name is easy to deduced from the entry name.
@@ -198,6 +215,7 @@ public abstract class CloudService {
 	 * @throws IOException
 	 */
 	public final String getLocalRevision(URI uri) throws IOException {
+		if (local) return getLocalFile(uri).exists() ? "1":null;
 		File file = getLocalFile(uri);
 		if (!file.exists()) return null;
 		String name = file.getName();
@@ -225,7 +243,7 @@ public abstract class CloudService {
 	 * @return true if the file was synchronized.
 	 */
 	public final boolean isSynchronized(URI uri) {
-		return getLocalFile(uri).getName().startsWith(SYNCHRONIZED_CACHE_PREFIX);
+		return local || getLocalFile(uri).getName().startsWith(SYNCHRONIZED_CACHE_PREFIX);
 	}
 	
 	/** Gets the remote path of an entry.
@@ -374,6 +392,44 @@ public abstract class CloudService {
 	 * @throws IOException 
 	 */
 	public abstract boolean download(URI uri, OutputStream out, Cancellable task, Locale locale) throws IOException;
+	
+	/** Downloads data from a cloud uri to a cache file.
+	 * @param uri The entry to download.
+	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the download if the task is cancelled.
+	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
+	 * @return true if the upload is done, false if it was cancelled
+	 * @throws IOException 
+	 */
+	public final boolean download(URI uri, Cancellable task, Locale locale) throws IOException {
+		if (local) return true;
+		File file = getLocalFile(uri);
+		file.getParentFile().mkdirs();
+		String revision = null;
+		String downloadedRevision = ""; //$NON-NLS-1$
+		// We do not download directly to the target file, to prevent file from being corrupted if the copy fails
+		File tmpFile = new File(file.getParent(), file.getName()+".tmp"); //$NON-NLS-1$
+		boolean done = true;
+		while (done && !NullUtils.areEquals(revision, downloadedRevision)) {
+			// While the downloaded revision is not the last one on the server (maybe the remote file is updated while we download it)
+			downloadedRevision = getRemoteRevision(uri);
+			OutputStream out = new FileOutputStream(tmpFile);
+			try {
+				done = download(uri, out, task, locale);
+			} finally {
+				out.close();
+			}
+			revision = getRemoteRevision(uri);
+		}
+		if (done) {
+			file.delete();
+			tmpFile.renameTo(file);
+			setLocalRevision(uri, revision);
+		} else {
+			tmpFile.delete();
+		}
+		return done;
+	}
+
 
 	/** Uploads data to a cloud destination uri.
 	 * @param in The inputStream from which to read to uploaded bytes
@@ -386,6 +442,75 @@ public abstract class CloudService {
 	 */
 	public abstract boolean upload(InputStream in, long length, URI uri, Cancellable task, Locale locale) throws IOException;
 	
+	/** Uploads an URi to the cache. 
+	 * @param uri The URI to upload
+	 * @param task A cancellable to report the progress or cancel the task.
+ 	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
+	 * @return true if the uri was successfully uploaded
+	 * @throws IOException
+	 */
+	public final boolean upload(URI uri, Cancellable task, Locale locale) throws IOException {
+		if (local) return true;
+		File file = getLocalFile(uri);
+		long length = file.length();
+		boolean done = false;
+		FileInputStream stream = new FileInputStream(file);
+		try {
+			done = upload(stream, length, uri, task, locale);
+		} finally {
+			stream.close();
+		}
+		if (done) {
+			setLocalRevision(uri, getRemoteRevision(uri));
+		}
+		return done;
+	}
+	
+	/** Synchronizes local cache and remote resource.
+	 * @param uri The remote URI
+	 * @return The synchronization state
+	 * @throws FileNotFoundException if neither the remote resource nor its cache file does exist 
+	 * @throws IOException if an exception occurs while synchronizing
+	 */
+	public final SynchronizationState synchronize(URI uri, Cancellable task, Locale locale) throws IOException {
+		String remoteRevision = getRemoteRevision(uri);
+		String localRevision = getLocalRevision(uri);
+//System.out.println("remote rev: "+remoteRevision+", local rev:"+localRevision);
+		File file = getLocalFile(uri);
+		if (remoteRevision==null) { // If remote uri doesn't exist
+			if (!file.exists()) throw new FileNotFoundException(); // The local cache doesn't exist
+			if (localRevision==null) { // The local cache was never synchronized
+				upload(uri, task, locale); // upload the cache to server
+				return SynchronizationState.SYNCHRONIZED;
+			} else { // Remote was deleted
+				return SynchronizationState.REMOTE_DELETED;
+			}
+		} else { // The remote uri exists
+			if (remoteRevision.equals(localRevision)) { // Cache and remote have the same origin 
+				if (isSynchronized(uri)) { // The cache and the remote are the same
+					return SynchronizationState.SYNCHRONIZED;
+				} else {
+					// cache was changed but not yet uploaded
+					upload(uri, task, locale);
+					return SynchronizationState.SYNCHRONIZED;
+				}
+			} else { // Cache and remote have not the same origin
+				if (!file.exists()) { // The local cache doesn't exist
+					download(uri, task, locale);
+					return SynchronizationState.SYNCHRONIZED;
+				} else { // The local cache exists
+					if (isSynchronized(uri)) { // The local cache was already synchronized
+						// This means the cloud has been modified after the cache was synchronized
+						download(uri, task, locale);
+						return SynchronizationState.SYNCHRONIZED;
+					} else { // The local cache was not synchronized with the remote uri
+						return SynchronizationState.CONFLICT;
+					}
+				}
+			}
+		}
+	}
+
 	public String getMessage(String key, Locale locale) {
 		return MessagePack.DEFAULT.getString(key, locale);
 	}
