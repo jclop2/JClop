@@ -13,27 +13,27 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.fathzer.soft.jclop.CloudService;
+import com.fathzer.soft.jclop.Service;
 
 /** An account in the Cloud, cached in a local folder.
- * @see CloudService
+ * @see Service
  */
 public final class Account {
 	private static final String INFO_FILENAME = ".info";
 
 	private File root;
-	CloudService service;
+	Service service;
 	private String displayName;
 	private String id;
 	protected Serializable connectionData;
 	protected long quota;
 	protected long used;
 	
-	protected Account(CloudService service, File file) throws IOException {
+	protected Account(Service service, File file) throws IOException {
 		if (!file.isDirectory()) throw new IllegalArgumentException();
 		this.root = file;
 		try {
-			this.id = URLDecoder.decode(file.getName(), CloudService.UTF_8);
+			this.id = URLDecoder.decode(file.getName(), Service.UTF_8);
 		} catch (UnsupportedEncodingException e) {
 			throw new UnsupportedEncodingException();
 		}
@@ -51,7 +51,7 @@ public final class Account {
 		this.used = -1;
 	}
 	
-	public Account(CloudService service, String id, String displayName, Serializable connectionData, long quota, long used) {
+	public Account(Service service, String id, String displayName, Serializable connectionData, long quota, long used) {
 		this.service = service;
 		this.id = id;
 		this.displayName = displayName;
@@ -59,7 +59,7 @@ public final class Account {
 		this.quota = quota;
 		this.used = used;
 		try {
-			this.root = new File(service.getCacheRoot(), URLEncoder.encode(id, CloudService.UTF_8));
+			this.root = new File(service.getCacheRoot(), URLEncoder.encode(id, Service.UTF_8));
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
@@ -96,7 +96,7 @@ public final class Account {
 	/** Gets the service that hosted this account. 
 	 * @return A service
 	 */
-	public CloudService getService() {
+	public Service getService() {
 		return this.service;
 	}
 	

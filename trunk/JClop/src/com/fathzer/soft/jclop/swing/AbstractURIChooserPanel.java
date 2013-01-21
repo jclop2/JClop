@@ -52,7 +52,7 @@ import javax.swing.JScrollPane;
 import com.fathzer.soft.jclop.Account;
 import com.fathzer.soft.jclop.Entry;
 import com.fathzer.soft.jclop.InvalidConnectionDataException;
-import com.fathzer.soft.jclop.CloudService;
+import com.fathzer.soft.jclop.Service;
 import com.fathzer.soft.jclop.UnreachableHostException;
 
 @SuppressWarnings("serial")
@@ -74,7 +74,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private ComboBox accountsCombo;
 	private JButton newButton;
 	private JButton deleteButton;
-	private CloudService service;
+	private Service service;
 	private String initedAccountId;
 	private boolean linked;
 	
@@ -85,7 +85,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JLabel statusIcon;
 	private JPanel panel_1;
 	
-	public AbstractURIChooserPanel(CloudService service) {
+	public AbstractURIChooserPanel(Service service) {
 		this.service = service;
 		this.initedAccountId = null;
 		this.linked = false;
@@ -510,7 +510,7 @@ System.out.println("Refresh in hasPendingSelected, selection = "+getAccountsComb
 
 	protected abstract Account createNewAccount();
 
-	public CloudService getService() {
+	public Service getService() {
 		return service;
 	}
 
