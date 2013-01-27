@@ -146,7 +146,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				Entry entry = pendingSelectedEntry;
 				boolean old = getAccountsCombo().isActionEnabled(); 
 				getAccountsCombo().setActionEnabled(false);
-System.out.println("Refresh in hasPendingSelected, selection = "+getAccountsCombo().getSelectedIndex()); //TODO
+//System.out.println("Refresh in hasPendingSelected, selection = "+getAccountsCombo().getSelectedIndex()); //TODO
 				if (!getAccountsCombo().contains(entry.getAccount())) {
 					getAccountsCombo().addItem(entry.getAccount());
 					isNewAccount = true;
