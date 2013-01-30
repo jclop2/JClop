@@ -257,7 +257,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 	private JTable getFileList() {
 		if (fileList == null) {
-			fileList = new JTable(filesModel);
+			fileList = new net.astesana.ajlib.swing.table.JTable(filesModel);
 			fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			fileList.addMouseListener(new JTableListener(null, new AbstractAction() {
 				@Override
