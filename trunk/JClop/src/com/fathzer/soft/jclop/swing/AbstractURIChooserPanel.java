@@ -1,6 +1,8 @@
 package com.fathzer.soft.jclop.swing;
 
 import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -14,6 +16,7 @@ import java.awt.Component;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Window;
 
 import javax.swing.JButton;
@@ -127,14 +130,26 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	 */
 	public void setIconPack(IconPack pack) {
 		this.icons = pack;
-		this.getNewButton().setIcon(this.icons.getNewAccount());
-		this.getDeleteButton().setIcon(this.icons.getDeleteAccount());
-		this.getRefreshButton().setIcon(this.icons.getSynchronize());
+		this.getNewButton().setIcon(getSizedIcon(this.icons.getNewAccount()));
+		this.getDeleteButton().setIcon(getSizedIcon(this.icons.getDeleteAccount()));
+		this.getRefreshButton().setIcon(getSizedIcon(this.icons.getSynchronize()));
 		setStatusIcon();
+	}
+	
+	private Icon getSizedIcon(Icon icon) {
+		Image img = ((ImageIcon)icon).getImage();
+		int fontSize = getFont().getSize();
+		int DEFAULT_FONT_SIZE = 12;
+		if (fontSize!=DEFAULT_FONT_SIZE) {
+		  Image newimg = img.getScaledInstance(img.getWidth(this)*fontSize/DEFAULT_FONT_SIZE,
+		  		img.getHeight(this)*fontSize/DEFAULT_FONT_SIZE, java.awt.Image.SCALE_SMOOTH);
+		  icon = new ImageIcon(newimg);
+		}
+	  return icon;
 	}
 
 	private void setStatusIcon() {
-		this.getStatusIcon().setIcon(this.linked?icons.getLinked():icons.getNotLinked());
+		this.getStatusIcon().setIcon(getSizedIcon(this.linked?icons.getLinked():icons.getNotLinked()));
 	}
 
 	public void refresh(boolean force) {
@@ -331,6 +346,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			gbc_panel.gridy = 0;
 			northPanel.add(getPanel(), gbc_panel);
 			GridBagConstraints gbc_refreshButton = new GridBagConstraints();
+			gbc_refreshButton.fill = GridBagConstraints.VERTICAL;
 			gbc_refreshButton.gridheight = 1;
 			gbc_refreshButton.gridx = 1;
 			gbc_refreshButton.gridy = 0;
