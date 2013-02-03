@@ -56,7 +56,7 @@ public class FileSystemService extends Service {
 	}
 
 	@Override
-	public String getRemoteRevision(URI uri) throws IOException {
+	public String getRemoteRevision(URI uri) throws JClopException {
 		return getLocalRevision(uri);
 	}
 

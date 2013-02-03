@@ -1,8 +1,9 @@
 package com.fathzer.soft.jclop;
 
-import java.io.IOException;
-
+/** Signals that the connection data of the account was refused by the server (for example, password if wrong).
+ * @author Jean-Marc Astesana
+ */
 @SuppressWarnings("serial")
-public class InvalidConnectionDataException extends IOException {
+public class InvalidConnectionDataException extends JClopException {
 
 }

@@ -212,9 +212,8 @@ public abstract class Service {
 	 * <br>This revision was the remote one last time local and cloud copies were successfully synchronized. 
 	 * @param uri The URI.
 	 * @return A String that identifies the revision or null if the local cache doesn't exist or was never been synchronized with the cloud source.
-	 * @throws IOException
 	 */
-	public final String getLocalRevision(URI uri) throws IOException {
+	public final String getLocalRevision(URI uri) {
 		if (local) return getLocalFile(uri).exists() ? "1":null;
 		File file = getLocalFile(uri);
 		if (!file.exists()) return null;
@@ -352,10 +351,9 @@ public abstract class Service {
 	 * @param account The account
 	 * @param task A Cancellable instance that will report the progress or null.
 	 * @return A collection of entries 
-	 * @throws UnreachableHostException if the host is unreachable (the Internet connection is down).
-	 * @throws InvalidConnectionDataException if the connection data of the account is refused by the server (for example, password if wrong).
+	 * @throws JClopException if something goes wrong.
 	 */
-	public abstract Collection<Entry> getRemoteEntries(Account account, Cancellable task) throws UnreachableHostException, InvalidConnectionDataException;
+	public abstract Collection<Entry> getRemoteEntries(Account account, Cancellable task) throws JClopException;
 	
 	/** Gets the URI fragment equivalent to some connection data.
 	 * @param connectionData The connection data
@@ -379,9 +377,9 @@ public abstract class Service {
 	 * <br>There's no order relation between revisions.
 	 * @param uri The uri
 	 * @return a String or null if the entry does not exist remotely
-	 * @throws IOException 
+	 * @throws JClopException if something goes wrong.
 	 */
-	public abstract String getRemoteRevision(URI uri) throws IOException;
+	public abstract String getRemoteRevision(URI uri) throws JClopException;
 
 	/** Downloads data from a cloud uri.
 	 * @param uri The entry to download.
@@ -389,18 +387,20 @@ public abstract class Service {
 	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the download if the task is cancelled.
 	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
 	 * @return true if the upload is done, false if it was cancelled
-	 * @throws IOException 
+	 * @throws JClopException if something goes wrong while accessing the URI.
+	 * @throws IOException if something goes wrong while writing to the output stream.
 	 */
-	public abstract boolean download(URI uri, OutputStream out, Cancellable task, Locale locale) throws IOException;
+	public abstract boolean download(URI uri, OutputStream out, Cancellable task, Locale locale) throws JClopException, IOException;
 	
 	/** Downloads data from a cloud uri to a cache file.
 	 * @param uri The entry to download.
 	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the download if the task is cancelled.
 	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
 	 * @return true if the upload is done, false if it was cancelled
-	 * @throws IOException 
+	 * @throws JClopException if something goes wrong while accessing the URI.
+	 * @throws IOException if something goes wrong while writing to the local cache.
 	 */
-	public final boolean download(URI uri, Cancellable task, Locale locale) throws IOException {
+	public final boolean download(URI uri, Cancellable task, Locale locale) throws JClopException, IOException {
 		if (local) return true;
 		File file = getLocalFile(uri);
 		file.getParentFile().mkdirs();
@@ -438,18 +438,20 @@ public abstract class Service {
 	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the upload if the task is cancelled.
  	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
 	 * @return true if the upload is done, false if it was cancelled
-	 * @throws IOException 
+	 * @throws JClopException if something goes wrong while accessing the URI.
+	 * @throws IOException if something goes wrong while reading from the input stream.
 	 */
-	public abstract boolean upload(InputStream in, long length, URI uri, Cancellable task, Locale locale) throws IOException;
+	public abstract boolean upload(InputStream in, long length, URI uri, Cancellable task, Locale locale) throws JClopException, IOException;
 	
 	/** Uploads an URi to the cache. 
 	 * @param uri The URI to upload
 	 * @param task A cancellable to report the progress or cancel the task.
  	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
 	 * @return true if the uri was successfully uploaded
-	 * @throws IOException
+	 * @throws JClopException if something goes wrong while accessing the URI.
+	 * @throws IOException if something goes wrong while reading from the local cache.
 	 */
-	public final boolean upload(URI uri, Cancellable task, Locale locale) throws IOException {
+	public final boolean upload(URI uri, Cancellable task, Locale locale) throws JClopException, IOException {
 		if (local) return true;
 		File file = getLocalFile(uri);
 		long length = file.length();
@@ -470,9 +472,10 @@ public abstract class Service {
 	 * @param uri The remote URI
 	 * @return The synchronization state
 	 * @throws FileNotFoundException if neither the remote resource nor its cache file does exist 
-	 * @throws IOException if an exception occurs while synchronizing
+	 * @throws JClopException if something goes wrong while accessing the URI.
+	 * @throws IOException if something goes wrong while accessing the local cache.
 	 */
-	public final SynchronizationState synchronize(URI uri, Cancellable task, Locale locale) throws IOException {
+	public final SynchronizationState synchronize(URI uri, Cancellable task, Locale locale) throws JClopException, IOException {
 		String remoteRevision = getRemoteRevision(uri);
 		String localRevision = getLocalRevision(uri);
 //System.out.println("remote rev: "+remoteRevision+", local rev:"+localRevision);
