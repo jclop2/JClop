@@ -5,4 +5,5 @@ public interface Cancellable {
 	public void setPhase(String phase, int max);
 	public void reportProgress(int progress);
 	public void setCancelAction(Runnable action);
+	public void setMax(int length);
 }

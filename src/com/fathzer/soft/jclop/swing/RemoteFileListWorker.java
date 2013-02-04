@@ -33,4 +33,9 @@ final class RemoteFileListWorker extends Worker<Collection<Entry>, Void> impleme
 	@Override
 	public void setCancelAction(Runnable action) {
 	}
+
+	@Override
+	public void setMax(int length) {
+		super.setPhaseLength(length);
+	}
 }
