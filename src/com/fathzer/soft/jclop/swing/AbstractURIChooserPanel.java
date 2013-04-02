@@ -170,6 +170,10 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				getAccountsCombo().setActionEnabled(old);
 				doAccountSelectionChanged();
 			}
+		} else {
+			if (getService().getAccounts().size()==0) {
+				createNewAccount();
+			}
 		}
 
 		Account account = (Account) getAccountsCombo().getSelectedItem();
