@@ -209,7 +209,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 						System.out.println ("Should do something, connetion data is invalid"); //FIXME
 //						showError(owner, MessagePack.COMMUNICATION_ERROR, getLocale());
 					} else {
-						showError(owner, MessagePack.COMMUNICATION_ERROR, getLocale());
+						showError(owner, service.getMessage(MessagePack.COMMUNICATION_ERROR, getLocale()), getLocale());
 					}
 				} catch (CancellationException e) {
 					// The task was cancelled
