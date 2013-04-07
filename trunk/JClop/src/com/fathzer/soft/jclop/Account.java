@@ -29,7 +29,7 @@ public final class Account {
 	protected long quota;
 	protected long used;
 	
-	protected Account(Service service, File file) throws IOException {
+	Account(Service service, File file) throws IOException {
 		if (!file.isDirectory()) throw new IllegalArgumentException();
 		this.root = file;
 		try {
