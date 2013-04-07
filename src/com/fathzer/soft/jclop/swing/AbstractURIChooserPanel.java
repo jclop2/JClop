@@ -173,6 +173,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		} else {
 			if (getService().getAccounts().size()==0) {
 				doNewAccount();
+				return; // The doNewAccount() method will call refresh again
 			}
 		}
 
@@ -647,7 +648,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			}
 			// Save the account data to disk
 			serialize(account);
+			getAccountsCombo().setActionEnabled(false);
 			getAccountsCombo().addItem(account);
+			getAccountsCombo().setActionEnabled(true);
 			getAccountsCombo().setSelectedItem(account);
 		}
 	}

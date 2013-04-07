@@ -188,7 +188,7 @@ public abstract class Service {
 	
 	/** Gets the file where the URI should be written.
 	 * <br>File name is used to store the synchronization state of an uri.
-	 * <br>So, when we update a file, we have store it in a file that will denote the updated data is not synchronized yet.
+	 * <br>So, when we update a file, we have to store it in a file that will denote that updated data is not synchronized yet.
 	 * <br>Later, the synchronization process will change the name of this file in order to mark it synchronized. 
 	 * @param uri an URI
 	 * @return a file
