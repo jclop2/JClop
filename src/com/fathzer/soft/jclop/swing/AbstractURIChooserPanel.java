@@ -172,7 +172,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			}
 		} else {
 			if (getService().getAccounts().size()==0) {
-				createNewAccount();
+				doNewAccount();
 			}
 		}
 
@@ -485,20 +485,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			newButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
-					Account account = createNewAccount();
-					if (account!=null) {
-						// Test if account is already there
-						for (int i = 0; i < getAccountsCombo().getItemCount(); i++) {
-							if (((Account)getAccountsCombo().getItemAt(i)).getDisplayName().equals(account.getDisplayName())) {
-								getAccountsCombo().setSelectedIndex(i);
-								return;
-							}
-						}
-						// Save the account data to disk
-						serialize(account);
-						getAccountsCombo().addItem(account);
-						getAccountsCombo().setSelectedItem(account);
-					}
+					doNewAccount();
 				}
 			});
 		}
@@ -646,5 +633,22 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		Account account = (Account) getAccountsCombo().getSelectedItem();
 		selectedURI = ((account==null) || (name.length()==0))?null:getService().getURI(new Entry(account, name));
 		if (!NullUtils.areEquals(selectedURI, old)) firePropertyChange(SELECTED_URI_PROPERTY, old, getSelectedURI());
+	}
+
+	private void doNewAccount() {
+		Account account = createNewAccount();
+		if (account!=null) {
+			// Test if account is already there
+			for (int i = 0; i < getAccountsCombo().getItemCount(); i++) {
+				if (((Account)getAccountsCombo().getItemAt(i)).getDisplayName().equals(account.getDisplayName())) {
+					getAccountsCombo().setSelectedIndex(i);
+					return;
+				}
+			}
+			// Save the account data to disk
+			serialize(account);
+			getAccountsCombo().addItem(account);
+			getAccountsCombo().setSelectedItem(account);
+		}
 	}
 }
