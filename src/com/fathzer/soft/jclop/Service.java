@@ -76,17 +76,20 @@ public abstract class Service {
 	 */
 	public abstract String getScheme();
 
-	/** Builds an account instance that is cached in a folder passed in argument.
-	 * @param folder The folder where the account is cached
-	 * @return An account, or null if the folder doesn't not contain a valid account.
-	 * @see Account#Account(Service, File)
+	/** Creates a new account.
+	 * @param id
+	 * @param displayName
+	 * @param connectionData
+	 * @param quota
+	 * @param used
+	 * @return the account created
+	 * @throws IOException if something went wrong while storing the cache data.
 	 */
-	private Account buildAccount(File folder) {
-		try {
-			return new Account(this, folder);
-		} catch (Exception e) {
-			return null; //FIXME
-		}
+	public Account newAccount(String id, String displayName, Serializable connectionData, long quota, long used) throws IOException {
+		Account account = new Account(this, id, displayName, connectionData, quota, used);
+		account.serialize();
+		accounts.add(account);
+		return account;
 	}
 	
 	/** Gets the available accounts.
@@ -104,8 +107,13 @@ public abstract class Service {
 		accounts = new ArrayList<Account>();
 		for (File file : files) {
 			if (file.isDirectory()) {
-				Account candidate = buildAccount(file);
-				if (candidate!=null) accounts.add(candidate);
+				try {
+					accounts.add(new Account(this, file));
+				} catch (Exception e) {
+					// Something is wrong in the account folder, ignore it
+					//TODO Log something
+					System.err.println (file+" is ignored");
+				}
 			}
 		}
 	}
