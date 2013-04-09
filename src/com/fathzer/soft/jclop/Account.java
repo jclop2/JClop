@@ -51,13 +51,13 @@ public final class Account {
 		this.used = -1;
 	}
 	
-	public Account(Service service, String id, String displayName, Serializable connectionData, long quota, long used) {
+	Account(Service service, String id, String displayName, Serializable connectionData) {
 		this.service = service;
 		this.id = id;
 		this.displayName = displayName;
 		this.connectionData = connectionData;
-		this.quota = quota;
-		this.used = used;
+		this.quota = -1;
+		this.used = -1;
 		try {
 			this.root = new File(service.getCacheRoot(), URLEncoder.encode(id, Service.UTF_8));
 		} catch (UnsupportedEncodingException e) {
@@ -65,7 +65,7 @@ public final class Account {
 		}
 	}
 	
-	public void serialize() throws IOException {
+	void serialize() throws IOException {
 		if (this.root.isFile()) this.root.delete();
 		this.root.mkdirs();
 		if (!this.root.isDirectory()) throw new IOException();
@@ -86,20 +86,23 @@ public final class Account {
 		return displayName;
 	}
 	
-	/** Gets the unique account id.
+	/** Gets the unique account's id.
 	 * @return a String
 	 */
 	public String getId() {
 		return this.id;
 	}
 
-	/** Gets the service that hosted this account. 
+	/** Gets the service that hosts this account. 
 	 * @return A service
 	 */
 	public Service getService() {
 		return this.service;
 	}
 	
+	/** Gets this account's connection data.
+	 * @return A serializable
+	 */
 	public Serializable getConnectionData() {
 		return this.connectionData;
 	}
@@ -138,22 +141,6 @@ public final class Account {
 		this.used = used;
 	}
 
-	/** Deletes the local data about this account.
-	 */
-	public void delete() {
-		delete (this.root);
-	}
-	
-	static void delete(File file) {
-		if (file.isDirectory()) {
-			File[] files = file.listFiles();
-			for (File child : files) {
-				delete(child);
-			}
-		}
-		file.delete();
-	}
-	
 	public Collection<Entry> getLocalEntries() {
 		Collection<Entry> result = new ArrayList<Entry>();
 		File[] files = this.root.listFiles();
@@ -191,5 +178,13 @@ public final class Account {
 	
 	File getRoot() {
 		return this.root;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public void setConnectionData(Serializable connectionData) {
+		this.connectionData = connectionData;
 	}
 }
