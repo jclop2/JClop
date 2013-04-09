@@ -153,22 +153,29 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 
 	public void refresh(boolean force) {
-		boolean isNewAccount = false;
 		if (hasPendingSelected) {
 			if (pendingSelectedEntry==null) {
 				getFileNameField().setText(""); //$NON-NLS-1$
 			} else {
 				Entry entry = pendingSelectedEntry;
-				boolean old = getAccountsCombo().isActionEnabled(); 
-				getAccountsCombo().setActionEnabled(false);
-//System.out.println("Refresh in hasPendingSelected, selection = "+getAccountsCombo().getSelectedIndex()); //TODO
-				if (!getAccountsCombo().contains(entry.getAccount())) {
-					getAccountsCombo().addItem(entry.getAccount());
-					isNewAccount = true;
+				Account account = getService().getAccount(entry.getAccount().getId());
+			  //System.out.println("Refresh in hasPendingSelected, selection = "+getAccountsCombo().getSelectedIndex());
+				if ((account==null) || (!account.equals(getAccountsCombo().getSelectedItem()))) {
+				  //System.out.println("Account changed");
+					if (account==null) {
+						try {
+							account = getService().newAccount(entry.getAccount().getId(), entry.getAccount().getDisplayName(), entry.getAccount().getConnectionData());
+							boolean old = getAccountsCombo().isActionEnabled(); 
+							getAccountsCombo().setActionEnabled(false);
+							getAccountsCombo().addItem(account);
+							getAccountsCombo().setActionEnabled(old);
+						} catch (IOException e) {
+							// Failed to create the account
+							return; //FIXME Beurk !!!
+						}
+					}
+					getAccountsCombo().setSelectedItem(account);
 				}
-				getAccountsCombo().setSelectedItem(entry.getAccount());
-				getAccountsCombo().setActionEnabled(old);
-				doAccountSelectionChanged();
 			}
 		} else {
 			if (getService().getAccounts().size()==0) {
@@ -235,9 +242,6 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			hasPendingSelected = false;
 			int index = isSaveType()?0:filesModel.indexOf(pendingSelectedEntry);
 			if (index>=0) getFileNameField().setText(pendingSelectedEntry.getDisplayName());
-			if (isNewAccount) {
-				serialize(account);
-			}
 		}
 	}
 
@@ -507,7 +511,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 					if (confirm) {
 						Account account = (Account) getAccountsCombo().getSelectedItem();
 						getAccountsCombo().removeItemAt(getAccountsCombo().getSelectedIndex());
-						account.delete();
+						getService().delete(account);
 						getFileNameField().setEditable(getAccountsCombo().getItemCount()>0);
 					}
 				}
@@ -516,7 +520,13 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		return deleteButton;
 	}
 
-	protected abstract Account createNewAccount();
+	/** Create a new account.
+	 * <br>This method should ask the user for the account's data then call getService().newAccount to create the new account.
+	 * <br>Be aware that duplicate account ids are not allowed.
+	 * @return the new account or an updated existing one or null if the user aborted the creation.
+	 * @see Service#newAccount(String, String, java.io.Serializable)
+	 */
+	protected abstract Account createNewAccount() throws IOException;
 
 	public Service getService() {
 		return service;
@@ -567,13 +577,13 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		return null;
 	}
 	
-	private void serialize(Account account) {
-		try {
-			account.serialize();
-		} catch (IOException e) {
-			showError(Utils.getOwnerWindow(getNewButton()), MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.Error.unableToSerializeAccount", getLocale()), getLocale());
-		}
-	}
+//	private void serialize(Account account) {
+//		try {
+//			account.serialize();
+//		} catch (IOException e) {
+//			showError(Utils.getOwnerWindow(getNewButton()), MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.Error.unableToSerializeAccount", getLocale()), getLocale());
+//		}
+//	}
 
 	/** Gets the index of the file which name is in the file name field and select/deselect in in the file list.
 	 * @return an integer >= 0 if the fileName is in the file list
@@ -607,7 +617,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 
 	public static void showError(Window owner, String message, Locale locale) {
-		JOptionPane.showMessageDialog(owner, message, MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.Error.title", locale), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+		JOptionPane.showMessageDialog(owner, message, MessagePack.DEFAULT.getString(MessagePack.ERROR_TITLE, locale), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 	}
 	private JLabel getStatusIcon() {
 		if (statusIcon == null) {
@@ -637,21 +647,21 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 
 	private void doNewAccount() {
-		Account account = createNewAccount();
-		if (account!=null) {
-			// Test if account is already there
-			for (int i = 0; i < getAccountsCombo().getItemCount(); i++) {
-				if (((Account)getAccountsCombo().getItemAt(i)).getDisplayName().equals(account.getDisplayName())) {
-					getAccountsCombo().setSelectedIndex(i);
-					return;
+		Account account = null;
+		try {
+			account = createNewAccount();
+			if (account!=null) {
+				if (!getAccountsCombo().contains(account)) {
+					boolean old = getAccountsCombo().isActionEnabled();
+					getAccountsCombo().setActionEnabled(false);
+					getAccountsCombo().addItem(account);
+					getAccountsCombo().setActionEnabled(old);
 				}
+				getAccountsCombo().setSelectedItem(account);
 			}
-			// Save the account data to disk
-			serialize(account);
-			getAccountsCombo().setActionEnabled(false);
-			getAccountsCombo().addItem(account);
-			getAccountsCombo().setActionEnabled(true);
-			getAccountsCombo().setSelectedItem(account);
+		} catch (IOException e) {
+			//FIXME Probably it would be better to ignore the error (why not trying to work with no cache ?). Need more thought.
+			return;
 		}
 	}
 }

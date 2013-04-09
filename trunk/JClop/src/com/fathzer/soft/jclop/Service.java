@@ -19,6 +19,7 @@ import java.util.Locale;
 
 import com.fathzer.soft.jclop.swing.MessagePack;
 
+import net.astesana.ajlib.utilities.FileUtils;
 import net.astesana.ajlib.utilities.NullUtils;
 import net.astesana.ajlib.utilities.StringUtils;
 
@@ -77,19 +78,35 @@ public abstract class Service {
 	public abstract String getScheme();
 
 	/** Creates a new account.
-	 * @param id
-	 * @param displayName
-	 * @param connectionData
-	 * @param quota
-	 * @param used
-	 * @return the account created
+	 * @param id The account's id
+	 * @param displayName The account's display name
+	 * @param connectionData The data necessary to connect with the account
+	 * @return the created account
 	 * @throws IOException if something went wrong while storing the cache data.
+	 * @throws IllegalArgumentException if an account with the same id already exists
 	 */
-	public Account newAccount(String id, String displayName, Serializable connectionData, long quota, long used) throws IOException {
-		Account account = new Account(this, id, displayName, connectionData, quota, used);
+	public Account newAccount(String id, String displayName, Serializable connectionData) throws IOException {
+		if (id==null) throw new NullPointerException();
+		for (Account acc : accounts) {
+			if (acc.getId().equals(id)) throw new IllegalArgumentException(); 
+		}
+		Account account = new Account(this, id, displayName, connectionData);
 		account.serialize();
 		accounts.add(account);
 		return account;
+	}
+	
+	/** Deletes an account.
+	 * @param account The account to delete. If the account doesn't exist, this method does nothing.
+	 */
+	public void delete(Account account) {
+		for (Account acc : accounts) {
+			if (acc.getId().equals(account.getId())) {
+				FileUtils.deleteDirectory(account.getRoot());
+				accounts.remove(account);
+				break;
+			}
+		}
 	}
 	
 	/** Gets the available accounts.
@@ -348,7 +365,7 @@ public abstract class Service {
 			}
 			// The account is unknown
 			Serializable connectionData = getConnectionData(split[1]);
-			Account account = new Account(this, accountId, accountName, connectionData, -1, -1);
+			Account account = new Account(this, accountId, accountName, connectionData);
 			return new Entry(account, path);
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
@@ -360,6 +377,7 @@ public abstract class Service {
 	 * @param task A Cancellable instance that will report the progress or null.
 	 * @return A collection of entries 
 	 * @throws JClopException if something goes wrong.
+	 * @see Account#getLocalEntries()
 	 */
 	public abstract Collection<Entry> getRemoteEntries(Account account, Cancellable task) throws JClopException;
 	
@@ -531,6 +549,17 @@ public abstract class Service {
 	 * @param uri
 	 */
 	public void deleteLocal(URI uri) {
-		Account.delete(getLocalFile(uri).getParentFile());
+		FileUtils.deleteDirectory(getLocalFile(uri).getParentFile());
+	}
+
+	/** Gets an account by its id.
+	 * @param id The account id
+	 * @return An account or null if the account is unknown
+	 */
+	public Account getAccount(String id) {
+		for (Account account : accounts) {
+			if (account.getId().equals(id)) return account;
+		}
+		return null;
 	}
 }
