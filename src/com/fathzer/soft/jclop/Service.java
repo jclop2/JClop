@@ -82,10 +82,9 @@ public abstract class Service {
 	 * @param displayName The account's display name
 	 * @param connectionData The data necessary to connect with the account
 	 * @return the created account
-	 * @throws IOException if something went wrong while storing the cache data.
 	 * @throws IllegalArgumentException if an account with the same id already exists
 	 */
-	public Account newAccount(String id, String displayName, Serializable connectionData) throws IOException {
+	public Account newAccount(String id, String displayName, Serializable connectionData) {
 		if (id==null) throw new NullPointerException();
 		for (Account acc : accounts) {
 			if (acc.getId().equals(id)) throw new IllegalArgumentException(); 

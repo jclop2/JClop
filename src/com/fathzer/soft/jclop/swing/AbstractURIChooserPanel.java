@@ -22,7 +22,6 @@ import java.awt.Window;
 import javax.swing.JButton;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.io.IOException;
 import java.net.URI;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
@@ -163,16 +162,11 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				if ((account==null) || (!account.equals(getAccountsCombo().getSelectedItem()))) {
 				  //System.out.println("Account changed");
 					if (account==null) {
-						try {
-							account = getService().newAccount(entry.getAccount().getId(), entry.getAccount().getDisplayName(), entry.getAccount().getConnectionData());
-							boolean old = getAccountsCombo().isActionEnabled(); 
-							getAccountsCombo().setActionEnabled(false);
-							getAccountsCombo().addItem(account);
-							getAccountsCombo().setActionEnabled(old);
-						} catch (IOException e) {
-							// Failed to create the account
-							return; //FIXME Beurk !!!
-						}
+						account = getService().newAccount(entry.getAccount().getId(), entry.getAccount().getDisplayName(), entry.getAccount().getConnectionData());
+						boolean old = getAccountsCombo().isActionEnabled(); 
+						getAccountsCombo().setActionEnabled(false);
+						getAccountsCombo().addItem(account);
+						getAccountsCombo().setActionEnabled(old);
 					}
 					getAccountsCombo().setSelectedItem(account);
 				}
@@ -522,11 +516,12 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 
 	/** Create a new account.
 	 * <br>This method should ask the user for the account's data then call getService().newAccount to create the new account.
-	 * <br>Be aware that duplicate account ids are not allowed.
+	 * <br>Be aware that duplicate account ids are not allowed. If the user selects an existing account, it is recommended to
+	 * update its attributes (serialization data, display name, etc).
 	 * @return the new account or an updated existing one or null if the user aborted the creation.
 	 * @see Service#newAccount(String, String, java.io.Serializable)
 	 */
-	protected abstract Account createNewAccount() throws IOException;
+	protected abstract Account createNewAccount();
 
 	public Service getService() {
 		return service;
@@ -648,20 +643,15 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 
 	private void doNewAccount() {
 		Account account = null;
-		try {
-			account = createNewAccount();
-			if (account!=null) {
-				if (!getAccountsCombo().contains(account)) {
-					boolean old = getAccountsCombo().isActionEnabled();
-					getAccountsCombo().setActionEnabled(false);
-					getAccountsCombo().addItem(account);
-					getAccountsCombo().setActionEnabled(old);
-				}
-				getAccountsCombo().setSelectedItem(account);
+		account = createNewAccount();
+		if (account!=null) {
+			if (!getAccountsCombo().contains(account)) {
+				boolean old = getAccountsCombo().isActionEnabled();
+				getAccountsCombo().setActionEnabled(false);
+				getAccountsCombo().addItem(account);
+				getAccountsCombo().setActionEnabled(old);
 			}
-		} catch (IOException e) {
-			//FIXME Probably it would be better to ignore the error (why not trying to work with no cache ?). Need more thought.
-			return;
+			getAccountsCombo().setSelectedItem(account);
 		}
 	}
 }
