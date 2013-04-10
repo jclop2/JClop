@@ -84,7 +84,7 @@ public abstract class Service {
 	 * @return the created account
 	 * @throws IllegalArgumentException if an account with the same id already exists
 	 */
-	public Account newAccount(String id, String displayName, Serializable connectionData) {
+	public synchronized Account newAccount(String id, String displayName, Serializable connectionData) {
 		if (id==null) throw new NullPointerException();
 		for (Account acc : accounts) {
 			if (acc.getId().equals(id)) throw new IllegalArgumentException(); 
@@ -98,7 +98,7 @@ public abstract class Service {
 	/** Deletes an account.
 	 * @param account The account to delete. If the account doesn't exist, this method does nothing.
 	 */
-	public void delete(Account account) {
+	public synchronized void delete(Account account) {
 		for (Account acc : accounts) {
 			if (acc.getId().equals(account.getId())) {
 				FileUtils.deleteDirectory(account.getRoot());
@@ -111,7 +111,7 @@ public abstract class Service {
 	/** Gets the available accounts.
 	 * @return A collection of available accounts
 	 */
-	public final Collection<Account> getAccounts() {
+	public synchronized final Collection<Account> getAccounts() {
 		return accounts;
 	}
 	
@@ -555,7 +555,7 @@ public abstract class Service {
 	 * @param id The account id
 	 * @return An account or null if the account is unknown
 	 */
-	public Account getAccount(String id) {
+	public synchronized Account getAccount(String id) {
 		for (Account account : accounts) {
 			if (account.getId().equals(id)) return account;
 		}
