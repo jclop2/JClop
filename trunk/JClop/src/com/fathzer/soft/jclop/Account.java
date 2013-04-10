@@ -13,6 +13,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import net.astesana.ajlib.utilities.NullUtils;
+
 import com.fathzer.soft.jclop.Service;
 
 /** An account in the Cloud, cached in a local folder.
@@ -25,6 +27,7 @@ public final class Account {
 	Service service;
 	private String displayName;
 	private String id;
+	private boolean serialized;
 	protected Serializable connectionData;
 	protected long quota;
 	protected long used;
@@ -49,6 +52,7 @@ public final class Account {
 		this.service = service;
 		this.quota = -1;
 		this.used = -1;
+		this.serialized = true;
 	}
 	
 	Account(Service service, String id, String displayName, Serializable connectionData) {
@@ -58,6 +62,7 @@ public final class Account {
 		this.connectionData = connectionData;
 		this.quota = -1;
 		this.used = -1;
+		this.serialized = false;
 		try {
 			this.root = new File(service.getCacheRoot(), URLEncoder.encode(id, Service.UTF_8));
 		} catch (UnsupportedEncodingException e) {
@@ -65,18 +70,36 @@ public final class Account {
 		}
 	}
 	
-	void serialize() throws IOException {
+	/** Serialize the account data to the cache.
+	 * <br>If the serialization fails the account is flag as not serialized
+	 * @see #isSerialized()
+	 */
+	synchronized void serialize() {
+		serialized = false;
 		if (this.root.isFile()) this.root.delete();
 		this.root.mkdirs();
-		if (!this.root.isDirectory()) throw new IOException();
+		if (!this.root.isDirectory()) return;
 		File connectionDataFile = new File(this.root, INFO_FILENAME);
-		ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(connectionDataFile));
 		try {
-			stream.writeObject(this.displayName);
-			stream.writeObject(this.connectionData);
-		} finally {
-			stream.close();
+			ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(connectionDataFile));
+			try {
+				stream.writeObject(this.displayName);
+				stream.writeObject(this.connectionData);
+			} finally {
+				stream.close();
+			}
+		} catch (IOException e) {
+			return;
 		}
+		serialized = true;
+	}
+	
+	/** Tests whether this account data has been successfully written to the cache until its last modification.
+	 * <br>The account data is display name and connection data. Folder content is not manage by attribute 
+	 * @return true if the account is serialized
+	 */
+	public synchronized boolean isSerialized() {
+		return this.serialized;
 	}
 	
 	/** Gets this account's display name.
@@ -180,11 +203,23 @@ public final class Account {
 		return this.root;
 	}
 
+	/** Sets the display name of this account.
+	 * @param displayName The new account display name
+	 */
 	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
+		if (!NullUtils.areEquals(displayName,this.displayName)) {
+			this.displayName = displayName;
+			serialize();
+		}
 	}
 
+	/** Sets the connection data of this account.
+	 * @param connectionData The new connection data name
+	 */
 	public void setConnectionData(Serializable connectionData) {
-		this.connectionData = connectionData;
+		if (!NullUtils.areEquals(connectionData,this.connectionData)) {
+			this.connectionData = connectionData;
+			serialize();
+		}
 	}
 }
