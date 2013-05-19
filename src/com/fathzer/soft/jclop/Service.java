@@ -283,7 +283,8 @@ public abstract class Service {
 	/** Converts a remote path to an entry.
 	 * <br>This method can be used by getRemoteFiles method in order to filter remote files.
 	 * <br>By default, this method returns the remote path without its ".zip" suffix. If the path begins with a '/', it is removed.
-	 * <br>If you override this method to change that, don't forget to override getRemotePath too. 
+	 * <br>If remote path does not end with ".zip", it returns null in order to have this file ignored. 
+	 * <br>If you override this method to change that behavior, don't forget to override getRemotePath too. 
 	 * @param account The account
 	 * @param remotePath The remote path
 	 * @return An entry or null if the entry should be ignored
@@ -291,7 +292,8 @@ public abstract class Service {
 	 * @see #getRemotePath(Entry)
 	 */
 	protected Entry getRemoteEntry(Account account, String remotePath) {
-		if (remotePath.endsWith(ZIP_SUFFIX)) remotePath = remotePath.substring(0, remotePath.length()-ZIP_SUFFIX.length());
+		if (!remotePath.endsWith(ZIP_SUFFIX)) return null;
+		remotePath = remotePath.substring(0, remotePath.length()-ZIP_SUFFIX.length());
 		return new Entry (account, remotePath.charAt(0)=='/'?remotePath.substring(1):remotePath);
 	}
 	
