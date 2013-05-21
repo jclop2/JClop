@@ -17,7 +17,7 @@ public class MessagePack {
 	public static final String UPLOADING = "com.fathzer.soft.jclop.uploading";
 	public static final String DOWNLOADING = "com.fathzer.soft.jclop.downloading";
 
-	public static final String ERROR_TITLE = "com.fathzer.soft.jclop.downloading";
+	public static final String ERROR_TITLE = "com.fathzer.soft.jclop.Error.title";
 	public static final String CONFLICT_MESSAGE = "com.fathzer.soft.jclop.conflict";
 	public static final String REMOTE_MISSING_MESSAGE = "com.fathzer.soft.jclop.remoteMissing";
 	public static final String DOWNLOAD_ACTION = "com.fathzer.soft.jclop.download";
