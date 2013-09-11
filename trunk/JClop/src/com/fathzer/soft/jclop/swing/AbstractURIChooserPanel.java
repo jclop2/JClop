@@ -527,9 +527,6 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		return service;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.astesana.ajlib.swing.dialog.urichooser.AbstractURIChooserPanel#getSchemes()
-	 */
 	@Override
 	public String getScheme() {
 		return service.getScheme();
@@ -545,9 +542,6 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		return getScheme();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.astesana.ajlib.swing.dialog.urichooser.AbstractURIChooserPanel#setUp()
-	 */
 	@Override
 	public void setUp() {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -558,9 +552,6 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see net.astesana.ajlib.swing.dialog.urichooser.AbstractURIChooserPanel#exist(java.net.URI)
-	 */
 	@Override
 	public boolean isSelectedExist() {
 		// If the selectedFile exists, it is selected in the file list as there's a listener on the file name field

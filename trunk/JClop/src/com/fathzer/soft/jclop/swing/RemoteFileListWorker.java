@@ -20,11 +20,6 @@ final class RemoteFileListWorker extends Worker<Collection<Entry>, Void> impleme
 		return account.getService().getRemoteEntries(account, this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.astesana.ajlib.swing.worker.Worker#setPhase(java.lang.String, int)
-	 */
 	@Override
 	public void setPhase(String phase, int phaseLength) {
 		super.setPhase(phase, phaseLength);
