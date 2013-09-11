@@ -1,6 +1,6 @@
 package com.fathzer.soft.jclop.swing;
 
-import net.astesana.ajlib.utilities.LocalizationData;
+import com.fathzer.soft.ajlib.utilities.LocalizationData;
 
 public class MessagePack {
 	public static final String KEY_PREFIX = "com.fathzer.soft.jclop"; //$NON-NLS-1$

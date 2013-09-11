@@ -13,9 +13,10 @@ import java.util.Locale;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import net.astesana.ajlib.swing.dialog.AbstractDialog;
-import net.astesana.ajlib.swing.dialog.FileChooser;
-import net.astesana.ajlib.swing.framework.Application;
+import com.fathzer.soft.ajlib.swing.dialog.AbstractDialog;
+import com.fathzer.soft.ajlib.swing.dialog.FileChooser;
+import com.fathzer.soft.ajlib.swing.framework.Application;
+
 
 @SuppressWarnings("serial")
 public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {

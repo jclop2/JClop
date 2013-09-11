@@ -9,8 +9,8 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Locale;
 
-import net.astesana.ajlib.utilities.FileUtils;
 
+import com.fathzer.soft.ajlib.utilities.FileUtils;
 import com.fathzer.soft.jclop.swing.FileChooserPanel;
 
 public class FileSystemService extends Service {

@@ -14,8 +14,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
-import net.astesana.ajlib.swing.dialog.FileChooser;
-import net.astesana.ajlib.utilities.NullUtils;
+import com.fathzer.soft.ajlib.swing.dialog.FileChooser;
+import com.fathzer.soft.ajlib.utilities.NullUtils;
+
 
 /** An AbstractURIChooserPanel that allows the user to select a file.
  * @author Jean-Marc Astesana

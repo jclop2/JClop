@@ -31,13 +31,6 @@ import java.util.TreeSet;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
-import net.astesana.ajlib.swing.widget.ComboBox;
-import net.astesana.ajlib.swing.Utils;
-import net.astesana.ajlib.swing.framework.Application;
-import net.astesana.ajlib.swing.table.JTableListener;
-import net.astesana.ajlib.swing.widget.TextWidget;
-import net.astesana.ajlib.swing.worker.WorkInProgressFrame;
-import net.astesana.ajlib.utilities.NullUtils;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -51,6 +44,13 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
+import com.fathzer.soft.ajlib.swing.Utils;
+import com.fathzer.soft.ajlib.swing.framework.Application;
+import com.fathzer.soft.ajlib.swing.table.JTableListener;
+import com.fathzer.soft.ajlib.swing.widget.ComboBox;
+import com.fathzer.soft.ajlib.swing.widget.TextWidget;
+import com.fathzer.soft.ajlib.swing.worker.WorkInProgressFrame;
+import com.fathzer.soft.ajlib.utilities.NullUtils;
 import com.fathzer.soft.jclop.Account;
 import com.fathzer.soft.jclop.Entry;
 import com.fathzer.soft.jclop.InvalidConnectionDataException;
@@ -275,7 +275,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	}
 	private JTable getFileList() {
 		if (fileList == null) {
-			fileList = new net.astesana.ajlib.swing.table.JTable(filesModel);
+			fileList = new com.fathzer.soft.ajlib.swing.table.JTable(filesModel);
 			fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			fileList.addMouseListener(new JTableListener(null, new AbstractAction() {
 				@Override

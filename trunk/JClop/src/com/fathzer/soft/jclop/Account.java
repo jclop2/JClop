@@ -13,8 +13,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import net.astesana.ajlib.utilities.NullUtils;
 
+import com.fathzer.soft.ajlib.utilities.NullUtils;
 import com.fathzer.soft.jclop.Service;
 
 /** An account in the Cloud, cached in a local folder.
