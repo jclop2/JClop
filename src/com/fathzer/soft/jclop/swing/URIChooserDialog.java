@@ -87,9 +87,6 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 		return getSelectedPanel().getDisabledCause();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.astesana.ajlib.swing.dialog.AbstractDialog#confirm()
-	 */
 	@Override
 	protected void confirm() {
 		URI selectedURI = getSelectedURI();
