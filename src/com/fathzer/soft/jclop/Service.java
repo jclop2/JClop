@@ -17,11 +17,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 
+import com.fathzer.soft.ajlib.utilities.FileUtils;
+import com.fathzer.soft.ajlib.utilities.NullUtils;
+import com.fathzer.soft.ajlib.utilities.StringUtils;
 import com.fathzer.soft.jclop.swing.MessagePack;
 
-import net.astesana.ajlib.utilities.FileUtils;
-import net.astesana.ajlib.utilities.NullUtils;
-import net.astesana.ajlib.utilities.StringUtils;
 
 /** A persistence service.
  * <br>There's two kinds of services :<ul>

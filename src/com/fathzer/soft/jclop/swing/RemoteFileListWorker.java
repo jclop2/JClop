@@ -2,11 +2,11 @@ package com.fathzer.soft.jclop.swing;
 
 import java.util.Collection;
 
+import com.fathzer.soft.ajlib.swing.worker.Worker;
 import com.fathzer.soft.jclop.Account;
 import com.fathzer.soft.jclop.Cancellable;
 import com.fathzer.soft.jclop.Entry;
 
-import net.astesana.ajlib.swing.worker.Worker;
 
 final class RemoteFileListWorker extends Worker<Collection<Entry>, Void> implements Cancellable {
 	private final Account account;

@@ -9,7 +9,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.astesana.ajlib.utilities.NullUtils;
+import com.fathzer.soft.ajlib.utilities.NullUtils;
+
 
 /** An URI chooser.
  * <br>This is a extension to the JFileChooser concept. It allows the user to select not only files,
