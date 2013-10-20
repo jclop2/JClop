@@ -10,6 +10,7 @@ import java.beans.PropertyChangeListener;
 import java.net.URI;
 import java.util.Locale;
 
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -20,8 +21,20 @@ import com.fathzer.soft.ajlib.swing.framework.Application;
 
 @SuppressWarnings("serial")
 public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
+	public interface ConfirmButtonUpdater {
+		/** Sets the title of dialog's confirm button.
+		 * @param button The confirm button
+		 * @param selectedURI The currently selected URI
+		 * @param existing true if this URI exists
+		 * @return true if the updater has made the whole job, false if the dialog should apply the default naming
+		 */
+		public boolean update(JButton button, URI selectedURI, boolean existing);
+	}
+	
 	private MultipleURIChooserPanel multiplePanel;
 	private boolean saveDialog;
+	private boolean confirmIfExisting;
+	private ConfirmButtonUpdater updater = null;
 	
 	/** Constructor.
 	 * <br>The created instance is an open dialog. You may call setSaveDialog if you need a save dialog
@@ -32,6 +45,7 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	public URIChooserDialog(Window owner, String title, URIChooser[] choosers) {
 		super(owner, title, choosers);
 		saveDialog = false; // To force setSaveDialog to do something
+		this.confirmIfExisting = true;
 		setSaveDialog(false);
 	}
 	
@@ -54,6 +68,9 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 		PropertyChangeListener selectListener = new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
+				if ((updater==null) || (!updater.update(getOkButton(), getSelectedURI(), getSelectedPanel().isSelectedExist()))) {
+					setOkButtonTitle();
+				}
 				updateOkButtonEnabled();
 			}
 		};
@@ -90,7 +107,7 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	@Override
 	protected void confirm() {
 		URI selectedURI = getSelectedURI();
-		boolean exists = selectedURI!=null && this.saveDialog && getSelectedPanel().isSelectedExist();
+		boolean exists = this.confirmIfExisting && selectedURI!=null && this.saveDialog && getSelectedPanel().isSelectedExist();
 		if (exists && FileChooser.showSaveDisplayQuestion(this)) return;
 		String error = getSelectedPanel().getDisabledCause();
 		if (error!=null) {
@@ -111,11 +128,26 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	public void setSaveDialog(boolean save) {
 		if (save!=saveDialog) {
 			this.saveDialog = save;
-			getOkButton().setText(save?MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.saveButton.title", getLocale()):MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.openButton.title", getLocale())); //$NON-NLS-1$ //$NON-NLS-2$
+			if ((updater==null) || (updater.update(getOkButton(), getSelectedURI(), getSelectedPanel().isSelectedExist()))) {
+				setOkButtonTitle();
+			}
 			for (URIChooser panel : data) {
 				panel.setSaveType(save);
 			}
 		}
+	}
+	
+	/** Sets the ok button title.
+	 * <br>This method is called when setSaveDialog attribute is changed.
+	 */
+	private void setOkButtonTitle() {
+		String title;
+		if (saveDialog) {
+			title = MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.saveButton.title", getLocale()); //$NON-NLS-1$
+		} else {
+			title = MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.openButton.title", getLocale()); //$NON-NLS-1$
+		}
+		getOkButton().setText(title);
 	}
 
 	/** Shows the dialog and gets its result.
@@ -160,5 +192,16 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 			}
 		}
 		//FIXME The wording of buttons should be updated
+	}
+	
+	/** Sets whether there should be a confirm dialog when selecting an existing file in save mode.
+	 * @param confirm true (which is the default) to have a confirm dialog, false to skip this dialog
+	 */
+	public void setConfirmIfExisting(boolean confirm) {
+		this.confirmIfExisting = confirm;
+	}
+	
+	public void setConfirmButtonUpdater(ConfirmButtonUpdater updater) {
+		this.updater = updater;
 	}
 }

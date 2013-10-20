@@ -119,7 +119,8 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 
 	@Override
 	public boolean isSelectedExist() {
-		return getFileChooser().getSelectedFile().exists();
+		File selectedFile = getFileChooser().getSelectedFile();
+		return (selectedFile!=null) && selectedFile.exists();
 	}
 
 	@Override
