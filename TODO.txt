@@ -1,4 +1,6 @@
-La création du premier compte dans AbstrcatURIChooserPanel merdoie totalement.
+Service pour www.box.com et pour des serveurs Ftp (voire sftp).
+
+La création du premier compte dans AbstractURIChooserPanel merdoie totalement.
 A l'origine de ce pb, il y a certainement le fait qu'il n'y ait pas de méthode explicite pour ajouter un compte à un service.
 Au lieu de ça, il y a une soupe infame de constructeur d'Account (qui n'ajoute pas le compte au service) et de sérialisation (qui ne le fait pas non plus).
 Ce serait certainement mieux si les méthodes de création de compte étaient toutes friendly et que la création était faite par une méthode du service.
