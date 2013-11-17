@@ -1,6 +1,7 @@
 package com.fathzer.soft.jclop.swing;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -9,7 +10,7 @@ import com.fathzer.soft.jclop.Entry;
 
 @SuppressWarnings("serial")
 class FilesTableModel extends AbstractTableModel {
-	private ArrayList<Entry> rows;
+	private List<Entry> rows;
 
 	public FilesTableModel() {
 		super();

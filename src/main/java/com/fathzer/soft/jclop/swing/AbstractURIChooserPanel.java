@@ -216,7 +216,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				} catch (CancellationException e) {
 					// The task was cancelled
 				}
-				if (eraseQuota) setQuota(null);
+				if (eraseQuota) {
+					setQuota(null);
+				}
 			}
 			getStatusIcon().setVisible(account!=null);
 			getProgressBar().setVisible(account!=null);
@@ -286,10 +288,8 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			fileList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
-					if (!e.getValueIsAdjusting()) {
-						if (getFileList().getSelectedRow()!=-1) {
-							getFileNameField().setText((String) filesModel.getValueAt(getFileList().getSelectedRow(), 0));
-						}
+					if (!e.getValueIsAdjusting() && (getFileList().getSelectedRow()!=-1)) {
+						getFileNameField().setText((String) filesModel.getValueAt(getFileList().getSelectedRow(), 0));
 					}
 				}
 			});
@@ -449,7 +449,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			accountsCombo.setRenderer(new BasicComboBoxRenderer(){
 				@Override
 				public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-					if (value!=null) value = ((Account)value).getDisplayName();
+					if (value!=null) {
+						value = ((Account)value).getDisplayName();
+					}
 					return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				}
 			});
