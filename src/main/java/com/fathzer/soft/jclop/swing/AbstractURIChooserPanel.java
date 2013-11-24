@@ -226,7 +226,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 			filesModel.clear();
 			for (Entry entry : entries) {
 				Entry filtered = filter(entry);
-				if (filtered!=null) filesModel.add(entry);
+				if (filtered!=null) {
+					filesModel.add(entry);
+				}
 			}
 			// Re-select the previously selected one (changing the model erases the selection)
 			selectByFileName();
@@ -237,7 +239,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		if (hasPendingSelected) {
 			hasPendingSelected = false;
 			int index = isSaveType()?0:filesModel.indexOf(pendingSelectedEntry);
-			if (index>=0) getFileNameField().setText(pendingSelectedEntry.getDisplayName());
+			if (index>=0) {
+				getFileNameField().setText(pendingSelectedEntry.getDisplayName());
+			}
 		}
 	}
 
@@ -339,27 +343,27 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JPanel getNorthPanel() {
 		if (northPanel == null) {
 			northPanel = new JPanel();
-			GridBagLayout gbl_northPanel = new GridBagLayout();
-			northPanel.setLayout(gbl_northPanel);
-			GridBagConstraints gbc_panel = new GridBagConstraints();
-			gbc_panel.weightx = 1.0;
-			gbc_panel.fill = GridBagConstraints.BOTH;
-			gbc_panel.insets = new Insets(0, 0, 0, 5);
-			gbc_panel.gridx = 0;
-			gbc_panel.gridy = 0;
-			northPanel.add(getPanel(), gbc_panel);
-			GridBagConstraints gbc_refreshButton = new GridBagConstraints();
-			gbc_refreshButton.fill = GridBagConstraints.VERTICAL;
-			gbc_refreshButton.gridheight = 1;
-			gbc_refreshButton.gridx = 1;
-			gbc_refreshButton.gridy = 0;
-			northPanel.add(getRefreshButton(), gbc_refreshButton);
-			GridBagConstraints gbc_panel1 = new GridBagConstraints();
-			gbc_panel1.fill = GridBagConstraints.BOTH;
-			gbc_panel1.gridwidth = 2;
-			gbc_panel1.gridx = 0;
-			gbc_panel1.gridy = 1;
-			northPanel.add(getPanel1(), gbc_panel1);
+			GridBagLayout gblNorthPanel = new GridBagLayout();
+			northPanel.setLayout(gblNorthPanel);
+			GridBagConstraints gbcPanel = new GridBagConstraints();
+			gbcPanel.weightx = 1.0;
+			gbcPanel.fill = GridBagConstraints.BOTH;
+			gbcPanel.insets = new Insets(0, 0, 0, 5);
+			gbcPanel.gridx = 0;
+			gbcPanel.gridy = 0;
+			northPanel.add(getPanel(), gbcPanel);
+			GridBagConstraints gbcRefreshButton = new GridBagConstraints();
+			gbcRefreshButton.fill = GridBagConstraints.VERTICAL;
+			gbcRefreshButton.gridheight = 1;
+			gbcRefreshButton.gridx = 1;
+			gbcRefreshButton.gridy = 0;
+			northPanel.add(getRefreshButton(), gbcRefreshButton);
+			GridBagConstraints gbcPanel1 = new GridBagConstraints();
+			gbcPanel1.fill = GridBagConstraints.BOTH;
+			gbcPanel1.gridwidth = 2;
+			gbcPanel1.gridx = 0;
+			gbcPanel1.gridy = 1;
+			northPanel.add(getPanel1(), gbcPanel1);
 		}
 		return northPanel;
 	}
@@ -412,34 +416,36 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	public void setSelectedURI(URI uri) {
 		pendingSelectedEntry = uri==null?null:this.service.getEntry(uri);
 		hasPendingSelected = true;
-		if (isShowing()) refresh(true);
+		if (isShowing()) {
+			refresh(true);
+		}
 	}
 	
 	private JPanel getPanel() {
 		if (panel == null) {
 			panel = new JPanel();
-			GridBagLayout gbl_panel = new GridBagLayout();
-			panel.setLayout(gbl_panel);
-			GridBagConstraints gbc_lblAccount = new GridBagConstraints();
-			gbc_lblAccount.fill = GridBagConstraints.BOTH;
-			gbc_lblAccount.anchor = GridBagConstraints.EAST;
-			gbc_lblAccount.gridx = 0;
-			gbc_lblAccount.gridy = 0;
-			panel.add(getLblAccount(), gbc_lblAccount);
-			GridBagConstraints gbc_accountsCombo = new GridBagConstraints();
-			gbc_accountsCombo.weightx = 1.0;
-			gbc_accountsCombo.fill = GridBagConstraints.BOTH;
-			gbc_accountsCombo.gridx = 1;
-			gbc_accountsCombo.gridy = 0;
-			panel.add(getAccountsCombo(), gbc_accountsCombo);
-			GridBagConstraints gbc_btnNewAccount = new GridBagConstraints();
-			gbc_btnNewAccount.gridx = 2;
-			gbc_btnNewAccount.gridy = 0;
-			panel.add(getNewButton(), gbc_btnNewAccount);
-			GridBagConstraints gbc_deleteButton = new GridBagConstraints();
-			gbc_deleteButton.gridx = 3;
-			gbc_deleteButton.gridy = 0;
-			panel.add(getDeleteButton(), gbc_deleteButton);
+			GridBagLayout gblPanel = new GridBagLayout();
+			panel.setLayout(gblPanel);
+			GridBagConstraints gbcLblAccount = new GridBagConstraints();
+			gbcLblAccount.fill = GridBagConstraints.BOTH;
+			gbcLblAccount.anchor = GridBagConstraints.EAST;
+			gbcLblAccount.gridx = 0;
+			gbcLblAccount.gridy = 0;
+			panel.add(getLblAccount(), gbcLblAccount);
+			GridBagConstraints gbcAccountsCombo = new GridBagConstraints();
+			gbcAccountsCombo.weightx = 1.0;
+			gbcAccountsCombo.fill = GridBagConstraints.BOTH;
+			gbcAccountsCombo.gridx = 1;
+			gbcAccountsCombo.gridy = 0;
+			panel.add(getAccountsCombo(), gbcAccountsCombo);
+			GridBagConstraints gbcBtnNewAccount = new GridBagConstraints();
+			gbcBtnNewAccount.gridx = 2;
+			gbcBtnNewAccount.gridy = 0;
+			panel.add(getNewButton(), gbcBtnNewAccount);
+			GridBagConstraints gbcDeleteButton = new GridBagConstraints();
+			gbcDeleteButton.gridx = 3;
+			gbcDeleteButton.gridy = 0;
+			panel.add(getDeleteButton(), gbcDeleteButton);
 		}
 		return panel;
 	}
@@ -631,7 +637,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		String name = getFileNameField().getText();
 		Account account = (Account) getAccountsCombo().getSelectedItem();
 		selectedURI = ((account==null) || (name.length()==0))?null:getService().getURI(new Entry(account, name));
-		if (!NullUtils.areEquals(selectedURI, old)) firePropertyChange(SELECTED_URI_PROPERTY, old, getSelectedURI());
+		if (!NullUtils.areEquals(selectedURI, old)) {
+			firePropertyChange(SELECTED_URI_PROPERTY, old, getSelectedURI());
+		}
 	}
 
 	private void doNewAccount() {
