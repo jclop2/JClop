@@ -45,7 +45,9 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 				} else {
 					newURI = newFile.toURI();
 				}
-				if (!NullUtils.areEquals(oldURI, newURI)) firePropertyChange(SELECTED_URI_PROPERTY, oldURI, newURI);
+				if (!NullUtils.areEquals(oldURI, newURI)) {
+					firePropertyChange(SELECTED_URI_PROPERTY, oldURI, newURI);
+				}
 			}
 		});
 	}
@@ -73,7 +75,9 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 			fileChooser.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand())) firePropertyChange(URI_APPROVED_PROPERTY, false, true);
+					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand())) {
+						firePropertyChange(URI_APPROVED_PROPERTY, false, true);
+					}
 				}
 			});
 		}
@@ -87,7 +91,9 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	}
 
 	@Override
-	public void setUp() {}
+	public void setUp() {
+		// Nothing to do
+	}
 
 	@Override
 	public void setSaveType(boolean save) {
@@ -97,11 +103,14 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	@Override
 	public void setSelectedURI(URI uri) {
 		if (uri==null) {
-			if (fileChooser.getSelectedFile()!=null) fileChooser.setSelectedFiles(null);
+			if (fileChooser.getSelectedFile()!=null) {
+				fileChooser.setSelectedFiles(null);
+			}
 		} else {
 			File file = new File(uri);
 			if (getFileChooser().getDialogType()==JFileChooser.OPEN_DIALOG) {
-				if (file.isFile()) { // File exists and is a not a directory
+				if (file.isFile()) {
+					// File exists and is a not a directory
 					fileChooser.setSelectedFile(file);
 				}
 			} else {

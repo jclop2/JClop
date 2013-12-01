@@ -50,7 +50,9 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	}
 	
 	private URIChooser getSelectedPanel() {
-		if (multiplePanel==null) return this.data[0];
+		if (multiplePanel==null) {
+			return this.data[0];
+		}
 		return (URIChooser) multiplePanel.getSelectedComponent();
 	}
 
@@ -108,7 +110,9 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	protected void confirm() {
 		URI selectedURI = getSelectedURI();
 		boolean exists = this.confirmIfExisting && selectedURI!=null && this.saveDialog && getSelectedPanel().isSelectedExist();
-		if (exists && FileChooser.showSaveDisplayQuestion(this)) return;
+		if (exists && FileChooser.showSaveDisplayQuestion(this)) {
+			return;
+		}
 		String error = getSelectedPanel().getDisabledCause();
 		if (error!=null) {
 			JOptionPane.showMessageDialog(this, error, Application.getString("Generic.error", getLocale()), JOptionPane.ERROR_MESSAGE);  //$NON-NLS-1$
@@ -170,7 +174,9 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 					panel = aPanel;
 				}
 			}
-			if (panel==null) throw new IllegalArgumentException(); // No panel with this scheme
+			if (panel==null) {
+				throw new IllegalArgumentException(); // No panel with this scheme
+			}
 		} else {
 			panel = data[0];
 		}

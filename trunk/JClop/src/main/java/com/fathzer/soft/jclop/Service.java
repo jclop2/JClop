@@ -61,8 +61,12 @@ public abstract class Service {
 		this.local = local;
 		if (!local) {
 			root = new File(root, getScheme());
-			if (!root.exists()) root.mkdirs();
-			if (!root.isDirectory()) throw new IllegalArgumentException();
+			if (!root.exists()) {
+				root.mkdirs();
+			}
+			if (!root.isDirectory()) {
+				throw new IllegalArgumentException();
+			}
 			this.root = root;
 			/** Forces the account list to be rebuild from the file cache content.
 			 * <br>This method doesn't call the cloud service to get the list of remote accounts
@@ -101,9 +105,13 @@ public abstract class Service {
 	 * @throws IllegalArgumentException if an account with the same id already exists
 	 */
 	public synchronized Account newAccount(String id, String displayName, Serializable connectionData) {
-		if (id==null) throw new NullPointerException();
+		if (id==null) {
+			throw new NullPointerException();
+		}
 		for (Account acc : accounts) {
-			if (acc.getId().equals(id)) throw new IllegalArgumentException(); 
+			if (acc.getId().equals(id)) {
+				throw new IllegalArgumentException(); 
+			}
 		}
 		Account account = new Account(this, id, displayName, connectionData);
 		account.serialize();
@@ -143,7 +151,9 @@ public abstract class Service {
 	final Entry getLocalEntry(Account account, File file) {
 		try {
 			// If the file is not starting with the file prefix, ignore it.
-			if (!file.getName().startsWith(FILE_PREFIX)) return null;
+			if (!file.getName().startsWith(FILE_PREFIX)) {
+				return null;
+			}
 			String[] files = file.list();
 			boolean ok = false;
 			if (files!=null) {
@@ -188,13 +198,17 @@ public abstract class Service {
 		}
 		String[] files = cacheDirectory.list();
 		// If there's no cache file, return the default cache file
-		if ((files==null) || (files.length==0)) return new File(cacheDirectory, CACHE_PREFIX+ZIP_SUFFIX);
+		if ((files==null) || (files.length==0)) {
+			return new File(cacheDirectory, CACHE_PREFIX+ZIP_SUFFIX);
+		}
 		// There's at least one file in the cache, return the most recent (delete others)
 		File result = null;
 		for (String f : files) {
 			File candidate = new File(cacheDirectory, f);
 			if (isValidFile(f) && ((result==null) || (candidate.lastModified()>result.lastModified()))) {
-				if (result!=null) result.delete();
+				if (result!=null) {
+					result.delete();
+				}
 				result = candidate;
 			} else {
 				candidate.delete();
@@ -224,8 +238,12 @@ public abstract class Service {
 		}
 		//Be aware that there could be some corrupted data in the cache folder.
 		//We will try to repair it (example: the parent folder should be a file, not a folder !)
-		if (parentFile.isFile()) parentFile.delete();
-		if (!parentFile.exists()) parentFile.mkdirs();
+		if (parentFile.isFile()) {
+			parentFile.delete();
+		}
+		if (!parentFile.exists()) {
+			parentFile.mkdirs();
+		}
 		return file;
 	}
 	
@@ -235,9 +253,13 @@ public abstract class Service {
 	 * @return A String that identifies the revision or null if the local cache doesn't exist or was never been synchronized with the cloud source.
 	 */
 	public final String getLocalRevision(URI uri) {
-		if (local) return getLocalFile(uri).exists() ? "1":null;
+		if (local) {
+			return getLocalFile(uri).exists() ? "1":null;
+		}
 		File file = getLocalFile(uri);
-		if (!file.exists()) return null;
+		if (!file.exists()) {
+			return null;
+		}
 		String name = file.getName();
 		String revision = name.substring(name.startsWith(CACHE_PREFIX) ? CACHE_PREFIX.length() : SYNCHRONIZED_CACHE_PREFIX.length());
 		revision = revision.substring(0, revision.length()-ZIP_SUFFIX.length());
@@ -289,7 +311,9 @@ public abstract class Service {
 	 * @see #getRemotePath(Entry)
 	 */
 	protected Entry getRemoteEntry(Account account, String remotePath) {
-		if (!remotePath.endsWith(ZIP_SUFFIX)) return null;
+		if (!remotePath.endsWith(ZIP_SUFFIX)) {
+			return null;
+		}
 		remotePath = remotePath.substring(0, remotePath.length()-ZIP_SUFFIX.length());
 		return new Entry (account, remotePath.charAt(0)=='/'?remotePath.substring(1):remotePath);
 	}
@@ -333,7 +357,9 @@ public abstract class Service {
 			}
 			builder.append(URLEncoder.encode(account.getDisplayName(), UTF_8));
 			builder.append('/');
-			if (path.startsWith("/")) path = path.substring(1);
+			if (path.startsWith("/")) {
+				path = path.substring(1);
+			}
 			builder.append(URLEncoder.encode(path, UTF_8));
 			return builder.toString();
 		} catch (UnsupportedEncodingException e) {
@@ -347,7 +373,9 @@ public abstract class Service {
 	 * @throws IllegalArgumentException if the uri is not supported or has a wrong format
 	 */
 	public final Entry getEntry(URI uri) {
-		if (!uri.getScheme().equals(getScheme())) throw new IllegalArgumentException();
+		if (!uri.getScheme().equals(getScheme())) {
+			throw new IllegalArgumentException();
+		}
 		try {
 			String path = URLDecoder.decode(uri.getPath().substring(1), UTF_8);
 			int index = path.indexOf('/');
@@ -424,7 +452,9 @@ public abstract class Service {
 	 * @throws IOException if something goes wrong while writing to the local cache.
 	 */
 	public final boolean download(URI uri, Cancellable task, Locale locale) throws JClopException, IOException {
-		if (local) return true;
+		if (local) {
+			return true;
+		}
 		File file = getLocalFile(uri);
 		file.getParentFile().mkdirs();
 		String revision = null;
@@ -475,7 +505,9 @@ public abstract class Service {
 	 * @throws IOException if something goes wrong while reading from the local cache.
 	 */
 	public final boolean upload(URI uri, Cancellable task, Locale locale) throws JClopException, IOException {
-		if (local) return true;
+		if (local) {
+			return true;
+		}
 		File file = getLocalFile(uri);
 		long length = file.length();
 		boolean done = false;
@@ -504,7 +536,9 @@ public abstract class Service {
 //System.out.println("remote rev: "+remoteRevision+", local rev:"+localRevision);
 		File file = getLocalFile(uri);
 		if (remoteRevision==null) { // If remote uri doesn't exist
-			if (!file.exists()) throw new FileNotFoundException(); // The local cache doesn't exist
+			if (!file.exists()) {
+				throw new FileNotFoundException(); // The local cache doesn't exist
+			}
 			if (localRevision==null) { // The local cache was never synchronized
 				upload(uri, task, locale); // upload the cache to server
 				return SynchronizationState.SYNCHRONIZED;
@@ -555,7 +589,9 @@ public abstract class Service {
 	 */
 	public synchronized Account getAccount(String id) {
 		for (Account account : accounts) {
-			if (account.getId().equals(id)) return account;
+			if (account.getId().equals(id)) {
+				return account;
+			}
 		}
 		return null;
 	}

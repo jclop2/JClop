@@ -62,8 +62,12 @@ class MultipleURIChooserPanel extends JTabbedPane {
 				URI old = selectedURI;
 				boolean hasSelectedTab = getSelectedComponent()!=null;
 				selectedURI = hasSelectedTab?((URIChooser)getSelectedComponent()).getSelectedURI():null;
-				if (!NullUtils.areEquals(old, selectedURI)) firePropertyChange(SELECTED_URI_PROPERTY, old, selectedURI);
-				if (hasSelectedTab && isShowing()) setUp(getSelectedIndex());
+				if (!NullUtils.areEquals(old, selectedURI)) {
+					firePropertyChange(SELECTED_URI_PROPERTY, old, selectedURI);
+				}
+				if (hasSelectedTab && isShowing()) {
+					setUp(getSelectedIndex());
+				}
 			}
 		};
 		addChangeListener(listener);

@@ -23,7 +23,7 @@ public class FileSystemService extends Service {
 		super(null, true);
 	}
 
-	public static FileSystemService INSTANCE = new FileSystemService();
+	public static final FileSystemService INSTANCE = new FileSystemService();
 	
 	@Override
 	public String getScheme() {
