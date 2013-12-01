@@ -2,8 +2,10 @@ package com.fathzer.soft.jclop.swing;
 
 import com.fathzer.soft.ajlib.utilities.LocalizationData;
 
-public class MessagePack {
-	private MessagePack() {}
+public abstract class MessagePack {
+	private MessagePack() {
+		// Nothing to do
+	}
 	
 	public static final String KEY_PREFIX = "com.fathzer.soft.jclop"; //$NON-NLS-1$
 	public static final String DEFAULT_BUNDLE_NAME = "com.fathzer.soft.jclop.swing.messages"; //$NON-NLS-1$

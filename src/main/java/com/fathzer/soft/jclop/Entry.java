@@ -26,7 +26,9 @@ public final class Entry implements Comparable<Entry> {
 	@Override
 	public int compareTo(Entry o) {
 		int result = this.account.getId().compareTo(o.getAccount().getId());
-		if (result==0) result = this.displayName.compareTo(o.displayName);
+		if (result==0) {
+			result = this.displayName.compareTo(o.displayName);
+		}
 		return result;
 	}
 
@@ -43,7 +45,9 @@ public final class Entry implements Comparable<Entry> {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof Entry)) return super.equals(obj);
+		if (!(obj instanceof Entry)) {
+			return super.equals(obj);
+		}
 		return account.equals(((Entry) obj).getAccount()) && displayName.equals(((Entry) obj).getDisplayName());
 	}
 	

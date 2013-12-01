@@ -15,7 +15,9 @@ public final class IconPack {
 	private Icon linked; 
 	private Icon notLinked; 
 	
-	public IconPack() {}
+	public IconPack() {
+		// Nothing to do (icons are instantiate using lazy initialization)
+	}
 
 	public Icon getSynchronize() {
 		if (synchronize==null) {

@@ -36,7 +36,9 @@ public final class Account {
 	protected long used;
 	
 	Account(Service service, File file) throws IOException {
-		if (!file.isDirectory()) throw new IllegalArgumentException();
+		if (!file.isDirectory()) {
+			throw new IllegalArgumentException();
+		}
 		this.root = file;
 		this.id = URLDecoder.decode(file.getName(), Service.UTF_8);
 		ObjectInputStream stream = new ObjectInputStream(new FileInputStream(new File(this.root, INFO_FILENAME)));
@@ -75,9 +77,13 @@ public final class Account {
 	 */
 	synchronized void serialize() {
 		serialized = false;
-		if (this.root.isFile()) this.root.delete();
+		if (this.root.isFile()) {
+			this.root.delete();
+		}
 		this.root.mkdirs();
-		if (!this.root.isDirectory()) return;
+		if (!this.root.isDirectory()) {
+			return;
+		}
 		File connectionDataFile = new File(this.root, INFO_FILENAME);
 		try {
 			ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(connectionDataFile));
@@ -171,7 +177,9 @@ public final class Account {
 			for (File file : files) {
 				if (file.isDirectory()) {
 					Entry entry = service.getLocalEntry(this, file);
-					if (entry!=null) result.add(entry);
+					if (entry!=null) {
+						result.add(entry);
+					}
 				}
 			}
 		}
@@ -191,7 +199,9 @@ public final class Account {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof Account)) return super.equals(obj);
+		if (!(obj instanceof Account)) {
+			return super.equals(obj);
+		}
 		return getId().equals(((Account)obj).getId());
 	}
 
