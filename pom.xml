@@ -25,4 +25,11 @@
   		<scope>provided</scope>
   	</dependency>
   </dependencies>
+  <name>JClop</name>
+  <url>http://jclop.soft.fathzer.com</url>
+  <description>A library to manage data persistence on cloud services like Dropbox (for instance).</description>
+  <scm>
+  	<url>http://svn.code.sf.net/p/jclop/code/trunk</url>
+  	<connection>http://svn.code.sf.net/p/jclop/code/trunk</connection>
+  </scm>
 </project>
