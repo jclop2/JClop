@@ -15,6 +15,8 @@ import java.util.Collection;
 
 
 
+
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fathzer.soft.ajlib.utilities.NullUtils;
@@ -24,6 +26,7 @@ import com.fathzer.soft.jclop.Service;
  * @see Service
  */
 public final class Account {
+	private static final Logger LOGGER = LoggerFactory.getLogger(Account.class);
 	private static final String INFO_FILENAME = ".info";
 
 	private File root;
@@ -94,7 +97,7 @@ public final class Account {
 				stream.close();
 			}
 		} catch (IOException e) {
-			LoggerFactory.getLogger(Account.class).warn("Unable to serialize account "+this.displayName, e);
+			LOGGER.warn("Unable to serialize account "+this.displayName, e);
 			return;
 		}
 		serialized = true;

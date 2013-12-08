@@ -13,12 +13,17 @@ import java.util.Locale;
 
 
 
+
+
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fathzer.soft.ajlib.utilities.FileUtils;
 import com.fathzer.soft.jclop.swing.FileChooserPanel;
 
 public class FileSystemService extends Service {
+	private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemService.class);
+
 	protected FileSystemService() {
 		super(null, true);
 	}
@@ -36,7 +41,7 @@ public class FileSystemService extends Service {
 		try {
 			return FileUtils.getCanonical(file);
 		} catch (IOException e) {
-			LoggerFactory.getLogger(getClass()).warn("Unable to find canonical file for "+uri, e);
+			LOGGER.warn("Unable to find canonical file for "+uri, e);
 			return file;
 		}
 	}
