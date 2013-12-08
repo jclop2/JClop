@@ -17,13 +17,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fathzer.soft.ajlib.utilities.FileUtils;
 import com.fathzer.soft.ajlib.utilities.NullUtils;
 import com.fathzer.soft.ajlib.utilities.StringUtils;
 import com.fathzer.soft.jclop.swing.MessagePack;
-
 
 /** A persistence service.
  * <br>There's two kinds of services :<ul>
@@ -35,6 +35,7 @@ import com.fathzer.soft.jclop.swing.MessagePack;
  * Licence GPL v3
  */
 public abstract class Service {
+	private static final Logger LOGGER = LoggerFactory.getLogger(Service.class);
 	static final String UTF_8 = "UTF-8";
 	static final String ZIP_SUFFIX = ".zip"; //$NON-NLS-1$
 	static final String FILE_PREFIX = "f_";
@@ -79,7 +80,7 @@ public abstract class Service {
 						accounts.add(new Account(this, file));
 					} catch (Exception e) {
 						// Something is wrong in the account folder, ignore it
-						LoggerFactory.getLogger(getClass()).warn(file+" is ignored", e);
+						LOGGER.warn(file+" is ignored", e);
 					}
 				}
 			}
