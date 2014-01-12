@@ -6,6 +6,10 @@ import java.io.IOException;
  * <br>All exceptions throwned by service extends this class.
  * @author Jean-Marc Astesana
  */
-@SuppressWarnings("serial")
 public abstract class JClopException extends IOException {
+	private static final long serialVersionUID = 1L;
+
+	public JClopException(Throwable cause) {
+		super(cause);
+	}
 }
