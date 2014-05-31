@@ -20,16 +20,17 @@ import java.awt.Image;
 import java.awt.Window;
 
 import javax.swing.JButton;
+
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.net.URI;
 import java.text.DecimalFormat;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.TreeSet;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+
 
 
 import javax.swing.event.ListSelectionEvent;
@@ -44,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
+import com.fathzer.jlocal.Formatter;
 import com.fathzer.soft.ajlib.swing.Utils;
 import com.fathzer.soft.ajlib.swing.framework.Application;
 import com.fathzer.soft.ajlib.swing.table.JTableListener;
@@ -263,7 +265,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 					}
 				}
 			}
-			getProgressBar().setString(MessageFormat.format(MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.Chooser.freeSpace", getLocale()), new DecimalFormat("0.0").format(remaining), unit)); //$NON-NLS-1$ //$NON-NLS-2$
+			getProgressBar().setString(Formatter.format(MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.Chooser.freeSpace", getLocale()), new DecimalFormat("0.0").format(remaining), unit)); //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
 			getProgressBar().setValue(0);
 			getProgressBar().setString("?");
