@@ -10,11 +10,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 
-
-
-
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +43,7 @@ public class FileSystemService extends Service {
 
 	@Override
 	public String getDisplayable(URI uri) {
-		return new File(uri).getPath();
+		return uri.getPath();
 	}
 
 	@Override
@@ -79,5 +74,13 @@ public class FileSystemService extends Service {
 	@Override
 	public boolean upload(InputStream in, long length, URI uri, Cancellable task, Locale locale) throws IOException {
 		return true;
+	}
+
+	@Override
+	public Entry getEntry(URI uri) {
+		if (!uri.getScheme().equals(getScheme())) {
+			throw new IllegalArgumentException();
+		}
+		return new Entry(null, uri.getPath());
 	}
 }

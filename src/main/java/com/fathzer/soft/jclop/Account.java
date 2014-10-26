@@ -59,7 +59,7 @@ public final class Account {
 		this.serialized = true;
 	}
 	
-	Account(Service service, String id, String displayName, Serializable connectionData) {
+	public Account(Service service, String id, String displayName, Serializable connectionData) {
 		this.service = service;
 		this.id = id;
 		this.displayName = displayName;

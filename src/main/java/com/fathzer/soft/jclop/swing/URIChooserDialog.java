@@ -210,4 +210,13 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 	public void setConfirmButtonUpdater(ConfirmButtonUpdater updater) {
 		this.updater = updater;
 	}
+
+	public boolean hasScheme(String scheme) {
+		for (URIChooser aPanel : data) {
+			if (aPanel.getScheme().equals(scheme)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
