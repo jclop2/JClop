@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fathzer.soft.ajlib.utilities.FileUtils;
 import com.fathzer.soft.ajlib.utilities.NullUtils;
-import com.fathzer.soft.ajlib.utilities.StringUtils;
 import com.fathzer.soft.jclop.swing.MessagePack;
 
 /** A persistence service.
@@ -36,7 +35,7 @@ import com.fathzer.soft.jclop.swing.MessagePack;
  */
 public abstract class Service {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Service.class);
-	static final String UTF_8 = "UTF-8";
+	public static final String UTF_8 = "UTF-8";
 	static final String ZIP_SUFFIX = ".zip"; //$NON-NLS-1$
 	static final String FILE_PREFIX = "f_";
 	private static final String CACHE_PREFIX = "cache"; //$NON-NLS-1$
@@ -49,13 +48,14 @@ public abstract class Service {
 	private Collection<Account> accounts;
 
 	/** Constructor.
-	 * @param root The root folder of the services (the place where all accounts of all services are cached).
+	 * @param root The root folder of the services (the place where all accounts of all services are cached).<br>
+	 * null if the service doesn't need any cache.
 	 * @param local true if the service is a local one, false if it stores its data in the cloud.
-	 * <br>Each service uses a folder in the root folder, where all the accounts it manages are cached.
+	 * <br>Each service can use a folder in the root folder, where all the accounts it manages are cached.
 	 * <br>This folder will be named with the service scheme.
-	 * <br>For example, if you root is "/home/user/.MyApp/cache" and getScheme() returns "MyService",
+	 * <br>For example, if your root is "/home/user/.MyApp/cache" and getScheme() returns "MyService",
 	 * the cached data will be placed in "/home/user/.MyApp/cache/MyService".
-	 * @throws IllegalArgumentException if it is not possible to create the service folder (or service is a file, not a folder)
+	 * @throws IllegalArgumentException if it is not possible to create the service folder (or service folder exists but is a file, not a folder)
 	 * @see #getScheme()  
 	 */
 	protected Service(File root, boolean local) {
@@ -102,7 +102,7 @@ public abstract class Service {
 	 * @param id The account's id
 	 * @param displayName The account's display name
 	 * @param connectionData The data necessary to connect with the account
-	 * @return the created account
+	 * @return The created account
 	 * @throws IllegalArgumentException if an account with the same id already exists
 	 */
 	public synchronized Account newAccount(String id, String displayName, Serializable connectionData) {
@@ -373,30 +373,7 @@ public abstract class Service {
 	 * @return an Entry.
 	 * @throws IllegalArgumentException if the uri is not supported or has a wrong format
 	 */
-	public final Entry getEntry(URI uri) {
-		if (!uri.getScheme().equals(getScheme())) {
-			throw new IllegalArgumentException();
-		}
-		try {
-			String path = URLDecoder.decode(uri.getPath().substring(1), UTF_8);
-			int index = path.indexOf('/');
-			String accountName = path.substring(0, index);
-			path = path.substring(index+1);
-			String[] split = StringUtils.split(uri.getUserInfo(), ':');
-			String accountId = URLDecoder.decode(split[0], UTF_8);
-			for (Account account : getAccounts()) {
-				if (account.getId().equals(accountId)) {
-					return new Entry(account, path);
-				}
-			}
-			// The account is unknown
-			Serializable connectionData = getConnectionData(split[1]);
-			Account account = new Account(this, accountId, accountName, connectionData);
-			return new Entry(account, path);
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-	}
+	public abstract Entry getEntry(URI uri);
 	
 	/** Gets the entries that are stored remotely by the cloud service.
 	 * @param account The account
@@ -531,7 +508,7 @@ public abstract class Service {
 	 * @throws JClopException if something goes wrong while accessing the URI.
 	 * @throws IOException if something goes wrong while accessing the local cache.
 	 */
-	public final SynchronizationState synchronize(URI uri, Cancellable task, Locale locale) throws JClopException, IOException {
+	public SynchronizationState synchronize(URI uri, Cancellable task, Locale locale) throws JClopException, IOException {
 		String remoteRevision = getRemoteRevision(uri);
 		String localRevision = getLocalRevision(uri);
 //System.out.println("remote rev: "+remoteRevision+", local rev:"+localRevision);
