@@ -634,7 +634,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	/** Updates the selected URI accordingly to the panel's content.
 	 * <br>Fire the appropriate property change event if the uri has changed.
 	 */
-	private void updateSelectedURI() {
+	public boolean updateSelectedURI() {
 		URI old = selectedURI;
 		String name = getFileNameField().getText();
 		Account account = (Account) getAccountsCombo().getSelectedItem();
@@ -642,6 +642,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		if (!NullUtils.areEquals(selectedURI, old)) {
 			firePropertyChange(SELECTED_URI_PROPERTY, old, getSelectedURI());
 		}
+		return true;
 	}
 
 	private void doNewAccount() {

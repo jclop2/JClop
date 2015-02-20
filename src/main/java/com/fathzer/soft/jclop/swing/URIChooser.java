@@ -93,4 +93,11 @@ public interface URIChooser {
 	 * @see FileChooserPanel
 	 */
 	public String getDisabledCause();
+
+	/** Ensure that getSelectedURI() will return the up to date selected URI.
+	 * <br>Because of a bug in JFileChooser, under some Look and Feels, it is impossible to know the selected file before the approve button
+	 * is pressed.
+	 * @return true is the selectedURI was successfully updated.
+	 */
+	public boolean updateSelectedURI();
 }

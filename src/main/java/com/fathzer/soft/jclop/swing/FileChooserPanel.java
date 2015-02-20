@@ -85,6 +85,11 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	}
 
 	@Override
+	public boolean updateSelectedURI() {
+		return getFileChooser().isGetSelectedFileFixed();
+	}
+
+	@Override
 	public URI getSelectedURI() {
 		File selectedFile = getFileChooser().getSelectedFile();
 		return selectedFile==null?null:selectedFile.toURI();
@@ -134,7 +139,8 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 
 	@Override
 	public String getDisabledCause() {
-		return getFileChooser().getDisabledCause();
+		FileChooser fc = getFileChooser();
+		return fc.isGetSelectedFileFixed()?fc.getDisabledCause():null;
 	}
 
 	/* (non-Javadoc)
