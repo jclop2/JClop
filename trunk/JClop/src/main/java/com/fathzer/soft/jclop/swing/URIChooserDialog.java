@@ -100,7 +100,7 @@ public class URIChooserDialog extends AbstractDialog<URIChooser[], URI> {
 
 	@Override
 	protected String getOkDisabledCause() {
-		if (getSelectedURI()==null) {
+		if (getSelectedPanel().updateSelectedURI() && getSelectedURI()==null) {
 			return MessagePack.DEFAULT.getString("com.fathzer.soft.jclop.URIChooserDialog.noFileSelected", getLocale()); //$NON-NLS-1$
 		}
 		return getSelectedPanel().getDisabledCause();
