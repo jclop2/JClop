@@ -11,17 +11,17 @@
   	<dependency>
   		<groupId>com.fathzer</groupId>
   		<artifactId>ajlib</artifactId>
-  		<version>0.2.9</version>
+  		<version>0.3.0</version>
   	</dependency>
   	<dependency>
   		<groupId>org.slf4j</groupId>
   		<artifactId>slf4j-api</artifactId>
-  		<version>1.7.5</version>
+  		<version>1.7.12</version>
   	</dependency>
   	<dependency>
   		<groupId>org.slf4j</groupId>
   		<artifactId>slf4j-simple</artifactId>
-  		<version>1.7.5</version>
+  		<version>1.7.12</version>
   		<scope>provided</scope>
   	</dependency>
   	<dependency>

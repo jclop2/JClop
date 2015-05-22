@@ -174,7 +174,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 				}
 			}
 		} else {
-			if (getService().getAccounts().size()==0) {
+			if (getService().getAccounts().isEmpty()) {
 				doNewAccount();
 				return; // The doNewAccount() method will call refresh again
 			}
