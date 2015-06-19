@@ -33,6 +33,8 @@ import java.util.concurrent.ExecutionException;
 
 
 
+
+
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
@@ -44,6 +46,9 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fathzer.jlocal.Formatter;
 import com.fathzer.soft.ajlib.swing.Utils;
@@ -61,6 +66,7 @@ import com.fathzer.soft.jclop.UnreachableHostException;
 
 @SuppressWarnings("serial")
 public abstract class AbstractURIChooserPanel extends JPanel implements URIChooser {
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractURIChooserPanel.class);
 	private JPanel centerPanel;
 	private JTable fileList;
 	private JPanel filePanel;
@@ -210,9 +216,10 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 						getProgressBar().setString(service.getMessage(MessagePack.CONNECTION_ERROR, getLocale()));
 						eraseQuota = false;
 					} else if (e.getCause() instanceof InvalidConnectionDataException) {
+						LOGGER.error("Communication data is invalid !", e);
 						System.out.println ("Should do something, connetion data is invalid"); //FIXME
-//						showError(owner, MessagePack.COMMUNICATION_ERROR, getLocale());
 					} else {
+						LOGGER.error("communication error", e);
 						showError(owner, service.getMessage(MessagePack.COMMUNICATION_ERROR, getLocale()), getLocale());
 					}
 				} catch (CancellationException e) {
