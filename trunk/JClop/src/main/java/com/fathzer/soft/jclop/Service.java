@@ -55,15 +55,18 @@ public abstract class Service {
 	 * <br>This folder will be named with the service scheme.
 	 * <br>For example, if your root is "/home/user/.MyApp/cache" and getScheme() returns "MyService",
 	 * the cached data will be placed in "/home/user/.MyApp/cache/MyService".
+	 * @throws IOException If an error occurs while accessing to the local cache
 	 * @throws IllegalArgumentException if it is not possible to create the service folder (or service folder exists but is a file, not a folder)
 	 * @see #getScheme()  
 	 */
-	protected Service(File root, boolean local) {
+	protected Service(File root, boolean local) throws IOException {
 		this.local = local;
 		if (!local) {
 			root = new File(root, getScheme());
 			if (!root.exists()) {
-				root.mkdirs();
+				if (!root.mkdirs()) {
+					throw new IOException("Unable to create cache directory");
+				}
 			}
 			if (!root.isDirectory()) {
 				throw new IllegalArgumentException();
@@ -136,7 +139,7 @@ public abstract class Service {
 	/** Gets the available accounts.
 	 * @return A collection of available accounts
 	 */
-	public synchronized final Collection<Account> getAccounts() {
+	public final synchronized Collection<Account> getAccounts() {
 		return accounts;
 	}
 	
@@ -422,6 +425,7 @@ public abstract class Service {
 	public abstract boolean download(URI uri, OutputStream out, Cancellable task, Locale locale) throws JClopException, IOException;
 	
 	/** Downloads data from a cloud uri to a cache file.
+	 * Whatever is the synchronization state, this method forces the remote file to replace current cached file.
 	 * @param uri The entry to download.
 	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the download if the task is cancelled.
 	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
@@ -474,7 +478,8 @@ public abstract class Service {
 	 */
 	public abstract boolean upload(InputStream in, long length, URI uri, Cancellable task, Locale locale) throws JClopException, IOException;
 	
-	/** Uploads an URi to the cache. 
+	/** Uploads an URI from the cache to the remote service.
+	 * Whatever is the synchronization state, this method forces the cached file to replace current remote file.
 	 * @param uri The URI to upload
 	 * @param task A cancellable to report the progress or cancel the task.
  	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
@@ -513,35 +518,46 @@ public abstract class Service {
 		String localRevision = getLocalRevision(uri);
 //System.out.println("remote rev: "+remoteRevision+", local rev:"+localRevision);
 		File file = getLocalFile(uri);
-		if (remoteRevision==null) { // If remote uri doesn't exist
+		if (remoteRevision==null) {
+			// If remote uri doesn't exist
 			if (!file.exists()) {
-				throw new FileNotFoundException(); // The local cache doesn't exist
+				// The local cache doesn't exist
+				throw new FileNotFoundException();
 			}
-			if (localRevision==null) { // The local cache was never synchronized
-				upload(uri, task, locale); // upload the cache to server
+			if (localRevision==null) {
+				// The local cache was never synchronized -> Upload the cache to server
+				upload(uri, task, locale); 
 				return SynchronizationState.SYNCHRONIZED;
-			} else { // Remote was deleted
+			} else {
+				// Remote was deleted
 				return SynchronizationState.REMOTE_DELETED;
 			}
-		} else { // The remote uri exists
-			if (remoteRevision.equals(localRevision)) { // Cache and remote have the same origin 
-				if (isSynchronized(uri)) { // The cache and the remote are the same
+		} else {
+			// The remote uri exists
+			if (remoteRevision.equals(localRevision)) {
+				// Cache and remote have the same origin 
+				if (isSynchronized(uri)) {
+					// The cache and the remote are the same
 					return SynchronizationState.SYNCHRONIZED;
 				} else {
 					// cache was changed but not yet uploaded
 					upload(uri, task, locale);
 					return SynchronizationState.SYNCHRONIZED;
 				}
-			} else { // Cache and remote have not the same origin
+			} else {
+				// Cache and remote have not the same origin
 				if (!file.exists()) { // The local cache doesn't exist
 					download(uri, task, locale);
 					return SynchronizationState.SYNCHRONIZED;
-				} else { // The local cache exists
-					if (isSynchronized(uri)) { // The local cache was already synchronized
+				} else {
+					// The local cache exists
+					if (isSynchronized(uri)) {
+						// The local cache was already synchronized
 						// This means the cloud has been modified after the cache was synchronized
 						download(uri, task, locale);
 						return SynchronizationState.SYNCHRONIZED;
-					} else { // The local cache was not synchronized with the remote uri
+					} else {
+						// The local cache was not synchronized with the remote uri
 						return SynchronizationState.CONFLICT;
 					}
 				}

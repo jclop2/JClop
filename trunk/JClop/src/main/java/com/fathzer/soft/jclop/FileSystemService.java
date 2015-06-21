@@ -19,11 +19,21 @@ import com.fathzer.soft.jclop.swing.FileChooserPanel;
 public class FileSystemService extends Service {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemService.class);
 
-	protected FileSystemService() {
+	protected FileSystemService() throws IOException {
 		super(null, true);
 	}
 
-	public static final FileSystemService INSTANCE = new FileSystemService();
+	public static final FileSystemService INSTANCE;
+	
+	static {
+		FileSystemService instance = null;
+		try {
+			instance = new FileSystemService();
+		} catch (IOException e) {
+			LOGGER.error("Unexpected exception", e);
+		}
+		INSTANCE = instance;
+	}
 	
 	@Override
 	public String getScheme() {
