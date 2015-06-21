@@ -208,10 +208,6 @@ public final class Account {
 		return getId().equals(((Account)obj).getId());
 	}
 
-//	public Collection<Entry> getRemoteFiles(Cancellable task) throws UnreachableHostException {
-//		return this.service.getRemoteFiles(this, task);
-//	}
-	
 	File getRoot() {
 		return this.root;
 	}

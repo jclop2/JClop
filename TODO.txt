@@ -6,3 +6,5 @@ Au lieu de ça, il y a une soupe infame de constructeur d'Account (qui n'ajoute p
 Ce serait certainement mieux si les méthodes de création de compte étaient toutes friendly et que la création était faite par une méthode du service.
 
 Traiter proprement le "User over quota".
+
+Plutôt que d'avoir un FileForWriting et un File (for reading), il serait mieux d'avoir directement des stream qui compressent/décompressent à la volée
