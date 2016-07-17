@@ -64,6 +64,9 @@ import com.fathzer.soft.jclop.InvalidConnectionDataException;
 import com.fathzer.soft.jclop.Service;
 import com.fathzer.soft.jclop.UnreachableHostException;
 
+/** An abstract chooser that provides a generic file chooser panel for every service instance.
+ * <br>Limitations: This panel does not support folder creation or browsing. 
+ */
 @SuppressWarnings("serial")
 public abstract class AbstractURIChooserPanel extends JPanel implements URIChooser {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractURIChooserPanel.class);
@@ -95,6 +98,9 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	private JLabel statusIcon;
 	private JPanel panel1;
 	
+	/** Constructor.
+	 * @param service The service that will be used by the chooser.
+	 */
 	public AbstractURIChooserPanel(Service service) {
 		this.service = service;
 		this.initedAccountId = null;
@@ -418,10 +424,12 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 		return scrollPane;
 	}
 
+	@Override
 	public URI getSelectedURI() {
 		return selectedURI;
 	}
 	
+	@Override
 	public void setSelectedURI(URI uri) {
 		pendingSelectedEntry = uri==null?null:this.service.getEntry(uri);
 		hasPendingSelected = true;
@@ -540,6 +548,7 @@ public abstract class AbstractURIChooserPanel extends JPanel implements URIChoos
 	 */
 	protected abstract Account createNewAccount();
 
+	@Override
 	public Service getService() {
 		return service;
 	}

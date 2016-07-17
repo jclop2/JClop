@@ -94,13 +94,6 @@ public abstract class Service {
 		return local;
 	}
 	
-	/** Gets the scheme of uri managed by this service.
-	 * <br>Files are identified by uri. This method returns the scheme of the uri of files managed by this service.
-	 * The scheme is considered as a unique id for services.
-	 * @return the service uri scheme
-	 */
-	public abstract String getScheme();
-
 	/** Creates a new account.
 	 * @param id The account's id
 	 * @param displayName The account's display name
@@ -371,6 +364,13 @@ public abstract class Service {
 		}
 	}
 
+	/** Gets the scheme of uri managed by this service.
+	 * <br>Files are identified by uri. This method returns the scheme of the uri of files managed by this service.
+	 * You're free to define what scheme you want but scheme is considered as a unique id for services.
+	 * @return the service uri scheme
+	 */
+	public abstract String getScheme();
+
 	/** Gets an Entry from its URI.
 	 * @param uri An URI
 	 * @return an Entry.
@@ -424,6 +424,18 @@ public abstract class Service {
 	 */
 	public abstract boolean download(URI uri, OutputStream out, Cancellable task, Locale locale) throws JClopException, IOException;
 	
+	/** Uploads data to a cloud destination uri.
+	 * @param in The inputStream from which to read to uploaded bytes
+	 * @param length The number of bytes to upload
+	 * @param uri The URI where to upload.
+	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the upload if the task is cancelled.
+ 	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
+	 * @return true if the upload is done, false if it was cancelled
+	 * @throws JClopException if something goes wrong while accessing the URI.
+	 * @throws IOException if something goes wrong while reading from the input stream.
+	 */
+	public abstract boolean upload(InputStream in, long length, URI uri, Cancellable task, Locale locale) throws JClopException, IOException;
+	
 	/** Downloads data from a cloud uri to a cache file.
 	 * Whatever is the synchronization state, this method forces the remote file to replace current cached file.
 	 * @param uri The entry to download.
@@ -465,19 +477,6 @@ public abstract class Service {
 		return done;
 	}
 
-
-	/** Uploads data to a cloud destination uri.
-	 * @param in The inputStream from which to read to uploaded bytes
-	 * @param length The number of bytes to upload
-	 * @param uri The URI where to upload.
-	 * @param task The task that ask the download or null if no cancellable task is provided. Please make sure to report the progress and cancel the upload if the task is cancelled.
- 	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
-	 * @return true if the upload is done, false if it was cancelled
-	 * @throws JClopException if something goes wrong while accessing the URI.
-	 * @throws IOException if something goes wrong while reading from the input stream.
-	 */
-	public abstract boolean upload(InputStream in, long length, URI uri, Cancellable task, Locale locale) throws JClopException, IOException;
-	
 	/** Uploads an URI from the cache to the remote service.
 	 * Whatever is the synchronization state, this method forces the cached file to replace current remote file.
 	 * @param uri The URI to upload
