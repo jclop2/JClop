@@ -16,6 +16,8 @@ import javax.swing.JPanel;
 
 import com.fathzer.soft.ajlib.swing.dialog.FileChooser;
 import com.fathzer.soft.ajlib.utilities.NullUtils;
+import com.fathzer.soft.jclop.FileSystemService;
+import com.fathzer.soft.jclop.Service;
 
 
 /** An AbstractURIChooserPanel that allows the user to select a file.
@@ -150,5 +152,10 @@ public class FileChooserPanel extends JPanel implements URIChooser {
 	public void setLocale(Locale locale) {
 		getFileChooser().setLocale(locale);
 		super.setLocale(locale);
+	}
+
+	@Override
+	public Service getService() {
+		return FileSystemService.INSTANCE;
 	}
 }

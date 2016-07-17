@@ -4,6 +4,8 @@ import java.net.URI;
 
 import javax.swing.Icon;
 
+import com.fathzer.soft.jclop.Service;
+
 /** A component that allows the user to select a destination where to save/read his data.
  * <br><b><u>WARNING</u>:Although there is no indication that the class must be a subclass of Component, this is mandatory.</b>
  * @author Jean-Marc Astesana
@@ -100,4 +102,9 @@ public interface URIChooser {
 	 * @return true is the selectedURI was successfully updated.
 	 */
 	public boolean updateSelectedURI();
+	
+	/** Gets the service associated with this chooser.
+	 * @return a Service
+	 */
+	public Service getService();
 }
