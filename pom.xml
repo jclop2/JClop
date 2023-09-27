@@ -7,6 +7,13 @@
   	<artifactId>parent-pom</artifactId>
   	<version>1.0.2</version>
   </parent>
+  <name>JClop</name>
+  <url>http://jclop.soft.fathzer.com</url>
+  <description>A library to manage data persistence on cloud services like Dropbox (for instance).</description>
+  <scm>
+  	<url>https://github.com/jclop2/JClop.git</url>
+  	<connection>https://github.com/jclop2/JClop.git</connection>
+  </scm>
   <dependencies>
   	<dependency>
   		<groupId>com.fathzer</groupId>
@@ -30,11 +37,5 @@
   		<version>1.0.0</version>
   	</dependency>
   </dependencies>
-  <name>JClop</name>
-  <url>http://jclop.soft.fathzer.com</url>
-  <description>A library to manage data persistence on cloud services like Dropbox (for instance).</description>
-  <scm>
-  	<url>http://svn.code.sf.net/p/jclop/code/trunk</url>
-  	<connection>http://svn.code.sf.net/p/jclop/code/trunk</connection>
-  </scm>
+
 </project>

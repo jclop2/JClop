@@ -247,7 +247,7 @@ public abstract class Service {
 	/** Gets the revision on which the local cache of an URI is based.
 	 * <br>This revision was the remote one last time local and cloud copies were successfully synchronized. 
 	 * @param uri The URI.
-	 * @return A String that identifies the revision or null if the local cache doesn't exist or was never been synchronized with the cloud source.
+	 * @return A String that identifies the revision or null if the local cache doesn't exist or has never been synchronized with the cloud source.
 	 */
 	public final String getLocalRevision(URI uri) {
 		if (local) {
@@ -507,6 +507,8 @@ public abstract class Service {
 	
 	/** Synchronizes local cache and remote resource.
 	 * @param uri The remote URI
+	 * @param task A cancellable to report the progress or cancel the task.
+ 	 * @param locale The locale that will be used to set the name of task phases. This argument can be null if task is null too.
 	 * @return The synchronization state
 	 * @throws FileNotFoundException if neither the remote resource nor its cache file does exist 
 	 * @throws JClopException if something goes wrong while accessing the URI.
